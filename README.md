@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/danschultequb/qub-typescript.svg?branch=master)](https://travis-ci.org/danschultequb/qub-typescript)
+
 # Qub for Typescript
 
 This repository contains a collection of classes and functions for Typescript and Javascript.
