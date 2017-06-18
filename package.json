@@ -8,9 +8,9 @@
   ],
   "scripts": {
     "build": "tsc -p .",
-    "compile": "npm run build",
     "test": "mocha output/tests/ --ui tdd",
-    "coverage": "nyc npm test && open-cli output/coverage/index.html"
+    "coverage": "nyc npm test && open-cli output/coverage/index.html",
+    "prepublish": "npm run build"
   },
   "nyc": {
     "reporter": [
