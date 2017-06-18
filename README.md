@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/danschultequb/qub-typescript.svg?branch=master)](https://travis-ci.org/danschultequb/qub-typescript)
+[![npm version](https://badge.fury.io/js/qub.svg)](https://badge.fury.io/js/qub)
 
 # Qub for Typescript
 
