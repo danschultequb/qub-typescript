@@ -8,16 +8,20 @@
   ],
   "scripts": {
     "build": "tsc -p .",
+    "prepublish": "npm run build",
     "test": "mocha output/tests/ --ui tdd",
     "coverage": "nyc npm test && open-cli output/coverage/index.html",
-    "prepublish": "npm run build"
+    "travis-test": "nyc --check-coverage --lines 100 npm test"
   },
   "nyc": {
     "reporter": [
       "html"
     ],
     "report-dir": "output/coverage/",
-    "temp-directory": "output/.nyc_output/"
+    "temp-directory": "output/.nyc_output/",
+    "exclude": [
+      "output/tests"
+    ]
   },
   "repository": {
     "type": "git",

@@ -1325,11 +1325,11 @@ export function getLength(value: any[] | string): number {
 }
 
 export function startsWith(value: string, prefix: string): boolean {
-    return value && prefix && (prefix === value.substr(0, prefix.length));
+    return value && prefix && (prefix === value.substr(0, prefix.length)) ? true : false;
 }
 
 export function startsWithIgnoreCase(value: string, prefix: string): boolean {
-    return value && prefix && (prefix.toLowerCase() === value.substr(0, prefix.length).toLowerCase());
+    return value && prefix && (prefix.toLowerCase() === value.substr(0, prefix.length).toLowerCase()) ? true : false;
 }
 
 /**
@@ -2158,7 +2158,15 @@ export class Lexer extends IteratorBase<Lex> {
 }
 
 export function readWhile(iterator: Iterator<string>, condition: (character: string) => boolean): string {
-    let result: string = iterator.getCurrent();
+    if (!iterator.hasStarted()) {
+        iterator.next();
+    }
+
+    let result: string = "";
+
+    if (iterator.hasCurrent() && condition(iterator.getCurrent())) {
+        result = iterator.getCurrent();
+    }
 
     while (iterator.next() && condition(iterator.getCurrent())) {
         result += iterator.getCurrent();
