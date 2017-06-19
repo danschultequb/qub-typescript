@@ -4,3 +4,5 @@ node_js:
 script: npm run travis-test
 git:
   depth: 1
+notifications:
+  email: false
