@@ -11,12 +11,12 @@
     "prepublish": "npm run build",
     "test": "mocha output/tests/ --ui tdd",
     "coverage": "nyc npm test && open-cli output/coverage/index.html",
-    "travis-test": "nyc npm test"
+    "travis-test": "nyc npm test | coveralls"
   },
   "nyc": {
     "reporter": [
       "html",
-      "text-summary"
+      "text-lcov"
     ],
     "report-dir": "output/coverage/",
     "temp-directory": "output/.nyc_output/",
@@ -45,6 +45,7 @@
   "devDependencies": {
     "@types/mocha": "^2.2.41",
     "@types/node": "^7.0.18",
+    "coveralls": "^2.13.1",
     "mocha": "^3.3.0",
     "nyc": "^11.0.2",
     "open-cli": "^1.0.5",
