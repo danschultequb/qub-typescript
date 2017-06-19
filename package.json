@@ -2,7 +2,7 @@
   "name": "qub",
   "version": "1.0.1",
   "description": "A collection of common data structures and functions",
-  "main": "output/sources/Qub.js",
+  "main": "output/sources/Qub",
   "files": [
     "output/sources/"
   ],
