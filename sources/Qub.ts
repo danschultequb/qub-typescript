@@ -505,14 +505,14 @@ export interface Iterable<T> {
      * Get the value in this collection at the provided index. If the provided index is not defined
      * or is outside of this Iterable's bounds, then undefined will be returned.
      */
-    get(index: number): T;
+    getElement(index: number): T;
 
     /**
      * Get the value in this collection at the provided index from the end of the collection. If the
      * provided index is not defined or is outside of this Iterable's bounds, then undefined will be
      * returned.
      */
-    getLast(index: number): T;
+    getElementFromEnd(index: number): T;
 
     /**
      * Get whether or not this Iterable contians the provided value using the provided comparison
@@ -602,7 +602,7 @@ export abstract class IterableBase<T> implements Iterable<T> {
         return this.iterate().getCount();
     }
 
-    public get(index: number): T {
+    public getElement(index: number): T {
         let result: T;
         if (0 <= index) {
             const iterator: Iterator<T> = this.iterate();
@@ -614,7 +614,7 @@ export abstract class IterableBase<T> implements Iterable<T> {
         return result;
     }
 
-    public getLast(index: number): T {
+    public getElementFromEnd(index: number): T {
         let result: T;
         if (0 <= index) {
             const iterator: Iterator<T> = this.iterateReverse();
@@ -757,8 +757,8 @@ class SkipIterable<T> extends IterableBase<T> {
         return result;
     }
 
-    public get(index: number): T {
-        return this._innerIterable.get(index + this._toSkip);
+    public getElement(index: number): T {
+        return this._innerIterable.getElement(index + this._toSkip);
     }
 }
 
@@ -783,8 +783,8 @@ class TakeIterable<T> extends IterableBase<T> {
         return result;
     }
 
-    public get(index: number): T {
-        return 0 <= index && index < this.getCount() ? this._innerIterable.get(index) : undefined;
+    public getElement(index: number): T {
+        return 0 <= index && index < this.getCount() ? this._innerIterable.getElement(index) : undefined;
     }
 }
 
@@ -812,12 +812,12 @@ class MapIterable<OuterT, InnerT> implements Iterable<OuterT> {
         return this._innerIterable.getCount();
     }
 
-    public get(index: number): OuterT {
-        return this._mapFunction && isDefined(index) && 0 <= index && index < this.getCount() ? this._mapFunction(this._innerIterable.get(index)) : undefined;
+    public getElement(index: number): OuterT {
+        return this._mapFunction && isDefined(index) && 0 <= index && index < this.getCount() ? this._mapFunction(this._innerIterable.getElement(index)) : undefined;
     }
 
-    public getLast(index: number): OuterT {
-        return this._mapFunction && isDefined(index) && 0 <= index && index < this.getCount() ? this._mapFunction(this._innerIterable.getLast(index)) : undefined;
+    public getElementFromEnd(index: number): OuterT {
+        return this._mapFunction && isDefined(index) && 0 <= index && index < this.getCount() ? this._mapFunction(this._innerIterable.getElementFromEnd(index)) : undefined;
     }
 
     public contains(value: OuterT, comparison?: (lhs: OuterT, rhs: OuterT) => boolean): boolean {
@@ -955,7 +955,7 @@ export abstract class ArrayListIterator<T> extends IteratorBase<T> {
     public abstract next(): boolean;
 
     public getCurrent(): T {
-        return this._arrayList.get(this._currentIndex);
+        return this._arrayList.getElement(this._currentIndex);
     }
 }
 
@@ -1017,7 +1017,7 @@ export class ArrayList<T> extends IterableBase<T> {
         return new ArrayListReverseIterator<T>(this);
     }
 
-    public get(index: number): T {
+    public getElement(index: number): T {
         let result: T;
         if (isDefined(index) && 0 <= index && index < this._count) {
             result = this._data[index];
@@ -1124,11 +1124,21 @@ export interface KeyValuePair<KeyType, ValueType> {
 /**
  * A map/dictionary collection that associates a key to a value.
  */
-export class Map<KeyType, ValueType> {
+export class Map<KeyType, ValueType> extends IterableBase<KeyValuePair<KeyType, ValueType>> {
     private _pairs = new ArrayList<KeyValuePair<KeyType, ValueType>>();
 
     constructor(initialValues?: KeyValuePair<KeyType, ValueType>[] | Iterable<KeyValuePair<KeyType, ValueType>>) {
+        super();
+
         this.addAll(initialValues);
+    }
+
+    public iterate(): Iterator<KeyValuePair<KeyType, ValueType>> {
+        return this._pairs.iterate();
+    }
+
+    public iterateReverse(): Iterator<KeyValuePair<KeyType, ValueType>> {
+        return this._pairs.iterateReverse();
     }
 
     /**
@@ -1166,7 +1176,7 @@ export class Map<KeyType, ValueType> {
     /**
      * Get whether or not the map contains the provided key.
      */
-    public contains(key: KeyType): boolean {
+    public containsKey(key: KeyType): boolean {
         return this._pairs.any((pair) => pair.key === key);
     }
 
