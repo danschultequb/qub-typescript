@@ -1,6 +1,6 @@
 {
   "name": "qub",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A collection of common data structures and functions",
   "main": "output/sources/Qub.js",
   "files": [
@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "build": "tsc -p .",
-    "prepublish": "npm run build && npm run coverage",
+    "prepublish": "npm run build",
     "test": "mocha output/tests/ --ui tdd",
     "coverage": "nyc npm test && open-cli output/coverage/index.html",
     "travis-test": "nyc npm test | coveralls"
