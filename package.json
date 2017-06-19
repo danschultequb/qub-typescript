@@ -11,23 +11,18 @@
     "prepublish": "npm run build",
     "test": "mocha output/tests/ --ui tdd",
     "coverage": "nyc npm test && open-cli output/coverage/index.html",
-    "travis-test": "nyc npm test | coveralls"
+    "travis-test": "nyc --check-coverage --functions 100 --lines 100 --branches 100 --statements 100 --reporter=text-lcov npm test | coveralls"
   },
   "nyc": {
     "reporter": [
       "html",
-      "text-lcov"
+      "text-summary"
     ],
     "report-dir": "output/coverage/",
     "temp-directory": "output/.nyc_output/",
     "exclude": [
       "output/tests"
-    ],
-    "check-coverage": true,
-    "functions": 100,
-    "lines": 100,
-    "branches": 100,
-    "statements": 100
+    ]
   },
   "repository": {
     "type": "git",
