@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "build": "tsc -p .",
-    "prepublish": "npm run build",
+    "prepublish": "npm run build && npm run coverage",
     "test": "mocha output/tests/ --ui tdd",
     "coverage": "nyc npm test && open-cli output/coverage/index.html",
     "travis-test": "nyc npm test | coveralls"
