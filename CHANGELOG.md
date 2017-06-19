@@ -1,3 +1,7 @@
+### 1.0.3 (2017-06-18)
+
+- Add package.json typings reference
+
 ### 1.0.2 (2017-06-18)
 
 - Remove Travis-CI notification e-mails
