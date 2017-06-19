@@ -55,6 +55,94 @@ suite("Qub", () => {
         });
     });
 
+    suite("toLowerCase()", () => {
+        function toLowerCaseTest(original: string, expected: string = original): void {
+            test(`with ${qub.escapeAndQuote(original)}`, () => {
+                assert.deepStrictEqual(qub.toLowerCase(original), expected);
+            });
+        }
+
+        toLowerCaseTest(undefined);
+        toLowerCaseTest(null);
+        toLowerCaseTest("");
+        toLowerCaseTest("[");
+        toLowerCaseTest(" ");
+        toLowerCaseTest("a");
+        toLowerCaseTest("0");
+
+        toLowerCaseTest("A", "a");
+    });
+
+    suite("startsWith()", () => {
+        function startsWithTest(value: string, prefix: string, expected: boolean): void {
+            test(`with ${qub.escapeAndQuote(value)} and ${qub.escapeAndQuote(prefix)}`, () => {
+                assert.deepStrictEqual(qub.startsWith(value, prefix), expected);
+            });
+        }
+
+        startsWithTest(undefined, undefined, false);
+        startsWithTest(undefined, null, false);
+        startsWithTest(undefined, "", false);
+        startsWithTest(undefined, " ", false);
+
+        startsWithTest(null, undefined, false);
+        startsWithTest(null, null, false);
+        startsWithTest(null, "", false);
+        startsWithTest(null, " ", false);
+
+        startsWithTest("", undefined, false);
+        startsWithTest("", null, false);
+        startsWithTest("", "", false);
+        startsWithTest("", " ", false);
+
+        startsWithTest(" ", undefined, false);
+        startsWithTest(" ", null, false);
+        startsWithTest(" ", "", false);
+        startsWithTest(" ", " ", true);
+
+        startsWithTest("apples", undefined, false);
+        startsWithTest("apples", null, false);
+        startsWithTest("apples", "", false);
+        startsWithTest("apples", " ", false);
+        startsWithTest("apples", "app", true);
+        startsWithTest("apples", "A", false);
+    });
+
+    suite("startsWithIgnoreCase()", () => {
+        function startsWithIgnoreCaseTest(value: string, prefix: string, expected: boolean): void {
+            test(`with ${qub.escapeAndQuote(value)} and ${qub.escapeAndQuote(prefix)}`, () => {
+                assert.deepStrictEqual(qub.startsWithIgnoreCase(value, prefix), expected);
+            });
+        }
+
+        startsWithIgnoreCaseTest(undefined, undefined, false);
+        startsWithIgnoreCaseTest(undefined, null, false);
+        startsWithIgnoreCaseTest(undefined, "", false);
+        startsWithIgnoreCaseTest(undefined, " ", false);
+
+        startsWithIgnoreCaseTest(null, undefined, false);
+        startsWithIgnoreCaseTest(null, null, false);
+        startsWithIgnoreCaseTest(null, "", false);
+        startsWithIgnoreCaseTest(null, " ", false);
+
+        startsWithIgnoreCaseTest("", undefined, false);
+        startsWithIgnoreCaseTest("", null, false);
+        startsWithIgnoreCaseTest("", "", false);
+        startsWithIgnoreCaseTest("", " ", false);
+
+        startsWithIgnoreCaseTest(" ", undefined, false);
+        startsWithIgnoreCaseTest(" ", null, false);
+        startsWithIgnoreCaseTest(" ", "", false);
+        startsWithIgnoreCaseTest(" ", " ", true);
+
+        startsWithIgnoreCaseTest("apples", undefined, false);
+        startsWithIgnoreCaseTest("apples", null, false);
+        startsWithIgnoreCaseTest("apples", "", false);
+        startsWithIgnoreCaseTest("apples", " ", false);
+        startsWithIgnoreCaseTest("apples", "app", true);
+        startsWithIgnoreCaseTest("apples", "A", true);
+    });
+
     suite("isDefined(any)", () => {
         test("with null", () => {
             assert.deepStrictEqual(qub.isDefined(null), false);
@@ -1591,15 +1679,26 @@ suite("Qub", () => {
                 endsWithTest([1, 2, 3], ["4", "3"], false);
                 endsWithTest([1, 2, 3], ["2", "4"], false);
             });
+
+            test("for..of", () => {
+                const values: string[] = [];
+                for (const value of mapIterable) {
+                    values.push(value);
+                }
+                assert.deepStrictEqual(values, ["0", "1", "2", "3"]);
+            });
         });
 
         suite("concatenate()", () => {
             function concatenateTest(originalValues: number[], toConcatenate: number[], expectedValues: number[]): void {
                 test(`with ${JSON.stringify(originalValues)} and ${JSON.stringify(toConcatenate)}`, () => {
-                    assert.deepStrictEqual(new qub.ArrayList(originalValues).concatenate(new qub.ArrayList(toConcatenate)).toArray(), expectedValues);
+                    const originalIterable = new qub.ArrayList<number>(originalValues);
+                    const concatenateIterable: qub.Iterable<number> = toConcatenate ? new qub.ArrayList<number>(toConcatenate) : undefined;
+                    assert.deepStrictEqual(originalIterable.concatenate(concatenateIterable).toArray(), expectedValues);
                 });
             }
 
+            concatenateTest([], undefined, []);
             concatenateTest([], [], []);
             concatenateTest([0, 1, 2, 3], [], [0, 1, 2, 3]);
             concatenateTest([0, 1, 2, 3], [4], [0, 1, 2, 3, 4]);
@@ -1810,6 +1909,11 @@ suite("Qub", () => {
 
                     const mi5: qub.Iterator<string> = iterable.iterate().map(mapFunction);
                     assert.deepStrictEqual(mi5.toArrayList(), new qub.ArrayList(expectedValues));
+
+                    const mi6: qub.Iterator<string> = iterable.iterate().map(mapFunction);
+                    assert.deepStrictEqual(mi6.takeCurrent(), undefined);
+                    assert.deepStrictEqual(mi6.takeCurrent(), qub.getLength(expectedValues) >= 1 ? expectedValues[0] : undefined);
+                    assert.deepStrictEqual(mi6.takeCurrent(), qub.getLength(expectedValues) >= 2 ? expectedValues[1] : undefined);
                 });
             }
 
@@ -1890,6 +1994,62 @@ suite("Qub", () => {
             concatenateTest("with [1,2] toAdd", [0, 1, 2, 3, 4], [1, 2], [0, 1, 2, 3, 4, 1, 2]);
             concatenateTest("with [4,5,6] toAdd", [0, 1, 2, 3, 4], [4, 5, 6], [0, 1, 2, 3, 4, 4, 5, 6]);
         });
+
+        suite("takeCurrent()", () => {
+            test("with empty iterator", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                assert.deepStrictEqual(iterator.hasStarted(), false);
+                assert.deepStrictEqual(iterator.hasCurrent(), false);
+                assert.deepStrictEqual(iterator.getCurrent(), undefined);
+
+                for (let i = 0; i < 2; ++i) {
+                    assert.deepStrictEqual(iterator.takeCurrent(), undefined);
+
+                    assert.deepStrictEqual(iterator.hasStarted(), true);
+                    assert.deepStrictEqual(iterator.hasCurrent(), false);
+                    assert.deepStrictEqual(iterator.getCurrent(), undefined);
+                }
+            });
+
+            test("with non-empty iterator", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([7, 3, 1, 8]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                assert.deepStrictEqual(iterator.hasStarted(), false);
+                assert.deepStrictEqual(iterator.hasCurrent(), false);
+                assert.deepStrictEqual(iterator.getCurrent(), undefined);
+
+                assert.deepStrictEqual(iterator.takeCurrent(), undefined);
+
+                assert.deepStrictEqual(iterator.hasStarted(), true);
+                assert.deepStrictEqual(iterator.hasCurrent(), true);
+                assert.deepStrictEqual(iterator.getCurrent(), 7);
+
+                assert.deepStrictEqual(iterator.takeCurrent(), 7);
+
+                assert.deepStrictEqual(iterator.hasStarted(), true);
+                assert.deepStrictEqual(iterator.hasCurrent(), true);
+                assert.deepStrictEqual(iterator.getCurrent(), 3);
+            });
+        });
+
+        suite("toArrayList()", () => {
+            test("with empty iterator", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                assert.deepStrictEqual(iterator.toArrayList().toArray(), []);
+                assert.deepStrictEqual(iterator.hasStarted(), true);
+                assert.deepStrictEqual(iterator.hasCurrent(), false);
+            });
+
+            test("with non-empty iterator", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([7, 3, 1, 8]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                assert.deepStrictEqual(iterator.toArrayList().toArray(), [7, 3, 1, 8]);
+                assert.deepStrictEqual(iterator.hasStarted(), true);
+                assert.deepStrictEqual(iterator.hasCurrent(), false);
+            });
+        });
     });
 
     suite("Map", () => {
@@ -1932,6 +2092,18 @@ suite("Qub", () => {
             assert.deepStrictEqual(map.get("one"), 1);
             assert.deepStrictEqual(map.get("two"), 2);
             assert.deepStrictEqual(map.get("three"), 3);
+        });
+
+        suite("get()", () => {
+            test("with undefined", () => {
+                const map = new qub.Map<string, number>();
+                assert.deepStrictEqual(map.get(undefined), undefined);
+            });
+
+            test("with null", () => {
+                const map = new qub.Map<string, number>();
+                assert.deepStrictEqual(map.get(null), undefined);
+            });
         });
     });
 
@@ -2112,60 +2284,91 @@ suite("Qub", () => {
             nextTest(")", [qub.RightParenthesis(0)]);
             nextTest("#", [qub.Hash(0)]);
             nextTest("|", [qub.VerticalBar(0)]);
+            nextTest("%", [qub.Percent(0)]);
             nextTest("^", [qub.Unrecognized("^", 0)]);
         });
+    });
 
-        suite("isLetter(string)", () => {
-            test(`with "a"`, () => {
-                assert.deepStrictEqual(qub.isLetter("a"), true);
-            });
-
-            test(`with "A"`, () => {
-                assert.deepStrictEqual(qub.isLetter("A"), true);
-            });
-
-            test(`with "z"`, () => {
-                assert.deepStrictEqual(qub.isLetter("z"), true);
-            });
-
-            test(`with "Z"`, () => {
-                assert.deepStrictEqual(qub.isLetter("Z"), true);
-            });
-
-            test(`with " "`, () => {
-                assert.deepStrictEqual(qub.isLetter(" "), false);
-            });
-
-            test(`with "."`, () => {
-                assert.deepStrictEqual(qub.isLetter("."), false);
-            });
+    suite("isLetter(string)", () => {
+        test(`with "a"`, () => {
+            assert.deepStrictEqual(qub.isLetter("a"), true);
         });
 
-        suite("isDigit(string)", () => {
-            test(`with "0"`, () => {
-                assert.deepStrictEqual(qub.isDigit("0"), true);
-            });
-
-            test(`with "5"`, () => {
-                assert.deepStrictEqual(qub.isDigit("5"), true);
-            });
-
-            test(`with "9"`, () => {
-                assert.deepStrictEqual(qub.isDigit("9"), true);
-            });
-
-            test(`with "a"`, () => {
-                assert.deepStrictEqual(qub.isDigit("a"), false);
-            });
-
-            test(`with " "`, () => {
-                assert.deepStrictEqual(qub.isDigit(" "), false);
-            });
-
-            test(`with "Z"`, () => {
-                assert.deepStrictEqual(qub.isDigit("Z"), false);
-            });
+        test(`with "A"`, () => {
+            assert.deepStrictEqual(qub.isLetter("A"), true);
         });
+
+        test(`with "z"`, () => {
+            assert.deepStrictEqual(qub.isLetter("z"), true);
+        });
+
+        test(`with "Z"`, () => {
+            assert.deepStrictEqual(qub.isLetter("Z"), true);
+        });
+
+        test(`with " "`, () => {
+            assert.deepStrictEqual(qub.isLetter(" "), false);
+        });
+
+        test(`with "."`, () => {
+            assert.deepStrictEqual(qub.isLetter("."), false);
+        });
+    });
+
+    suite("isDigit(string)", () => {
+        test(`with "0"`, () => {
+            assert.deepStrictEqual(qub.isDigit("0"), true);
+        });
+
+        test(`with "5"`, () => {
+            assert.deepStrictEqual(qub.isDigit("5"), true);
+        });
+
+        test(`with "9"`, () => {
+            assert.deepStrictEqual(qub.isDigit("9"), true);
+        });
+
+        test(`with "a"`, () => {
+            assert.deepStrictEqual(qub.isDigit("a"), false);
+        });
+
+        test(`with " "`, () => {
+            assert.deepStrictEqual(qub.isDigit(" "), false);
+        });
+
+        test(`with "Z"`, () => {
+            assert.deepStrictEqual(qub.isDigit("Z"), false);
+        });
+    });
+
+    suite("isWhitespace(string)", () => {
+        function isWhitespaceTest(value: string, expected: boolean): void {
+            test(`with ${qub.escapeAndQuote(value)}`, () => {
+                assert.deepStrictEqual(qub.isWhitespace(value), expected);
+            });
+        }
+
+        isWhitespaceTest("0", false);
+        isWhitespaceTest("5", false);
+        isWhitespaceTest("9", false);
+        isWhitespaceTest("a", false);
+        isWhitespaceTest(" ", true);
+        isWhitespaceTest("\t", true);
+        isWhitespaceTest("\r", true);
+        isWhitespaceTest("\r\n", false);
+        isWhitespaceTest("\n", false);
+        isWhitespaceTest("Z", false);
+    });
+
+    test("readWhitespace()", () => {
+        const iterator = new qub.StringIterator(" \t\rabc ");
+        assert.deepStrictEqual(qub.readWhitespace(iterator), " \t\r");
+        assert.deepStrictEqual(qub.readWhitespace(iterator), "");
+        
+        qub.readLetters(iterator);
+
+        assert.deepStrictEqual(qub.readWhitespace(iterator), " ");
+        assert.deepStrictEqual(iterator.hasCurrent(), false);
     });
 
     suite("absoluteValue()", () => {
@@ -2200,6 +2403,7 @@ suite("Qub", () => {
                     assert.deepStrictEqual(iterator.next(), false);
                     assert.deepStrictEqual(iterator.hasStarted(), true);
                     assert.deepStrictEqual(iterator.getCurrent(), undefined);
+                    assert.deepStrictEqual(iterator.currentIndex, undefined);
                 }
             });
         }
