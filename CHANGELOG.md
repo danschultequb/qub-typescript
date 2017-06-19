@@ -1,3 +1,7 @@
+### 1.1.0 (2017-06-18)
+
+- Add Issues class and Error(), and Warning() functions
+
 ### 1.0.3 (2017-06-18)
 
 - Add package.json typings reference

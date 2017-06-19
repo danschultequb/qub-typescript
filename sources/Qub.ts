@@ -2285,3 +2285,77 @@ export class StringIterable extends IterableBase<string> {
         return new StringIterator(this._text, getLength(this._text) - 1, -1);
     }
 }
+
+
+
+/**
+ * The different types of issues that can be found in a document.
+ */
+export const enum IssueType {
+    Error,
+    Warning
+}
+
+/**
+ * An issue that is found in a document.
+ */
+export class Issue {
+    constructor(private _message: string, private _span: Span, private _type: IssueType) {
+    }
+
+    /**
+     * The user-friendly message that describes what this issue is about.
+     */
+    public get message(): string {
+        return this._message;
+    }
+
+    /**
+     * The character index span over which this issue applies.
+     */
+    public get span(): Span {
+        return this._span;
+    }
+
+    /**
+     * The character index at which this issue begins.
+     */
+    public get startIndex(): number {
+        return this._span.startIndex;
+    }
+
+    /**
+     * The number of characters over which this issue applies.
+     */
+    public get length(): number {
+        return this._span.length;
+    }
+
+    /**
+     * The index after the last index that this issue applies to.
+     */
+    public get afterEndIndex(): number {
+        return this._span.afterEndIndex;
+    }
+
+    /**
+     * The type of this issue.
+     */
+    public get type(): IssueType {
+        return this._type;
+    }
+}
+
+/**
+ * Get a new Error Issue with the provided message and span.
+ */
+export function Error(message: string, span: Span): Issue {
+    return new Issue(message, span, IssueType.Error);
+}
+
+/**
+ * Get a new Warning Issue with the provided message and span.
+ */
+export function Warning(message: string, span: Span): Issue {
+    return new Issue(message, span, IssueType.Warning);
+}
