@@ -2061,7 +2061,7 @@ suite("Qub", () => {
         test("for..of", () => {
             const map = new qub.Map<number, string>();
 
-            let values: qub.KeyValuePair<number,string>[] = [];
+            let values: qub.KeyValuePair<number, string>[] = [];
             for (const pair of map) {
                 values.push(pair);
             }
@@ -2071,14 +2071,14 @@ suite("Qub", () => {
             for (const pair of map) {
                 values.push(pair);
             }
-            assert.deepStrictEqual(values, [{key: 10, value: "ten"}]);
+            assert.deepStrictEqual(values, [{ key: 10, value: "ten" }]);
 
             values = [];
             map.add(20, "twenty");
             for (const pair of map) {
                 values.push(pair);
             }
-            assert.deepStrictEqual(values, [{key: 10, value: "ten"}, {key: 20, value: "twenty"}]);
+            assert.deepStrictEqual(values, [{ key: 10, value: "ten" }, { key: 20, value: "twenty" }]);
         });
 
         test("add()", () => {
@@ -2403,7 +2403,7 @@ suite("Qub", () => {
         const iterator = new qub.StringIterator(" \t\rabc ");
         assert.deepStrictEqual(qub.readWhitespace(iterator), " \t\r");
         assert.deepStrictEqual(qub.readWhitespace(iterator), "");
-        
+
         qub.readLetters(iterator);
 
         assert.deepStrictEqual(qub.readWhitespace(iterator), " ");
@@ -2485,5 +2485,45 @@ suite("Qub", () => {
             assert.deepStrictEqual(qub.getCombinedText(iterable), "apples");
             assert.deepStrictEqual(qub.getCombinedText(iterable.iterateReverse()), "selppa");
         });
+    });
+
+
+
+    suite("Error()", () => {
+        function errorTest(message: string, span: qub.Span): void {
+            test(`with ${qub.escapeAndQuote(message)} and ${span.toString()}`, () => {
+                const error: qub.Issue = qub.Error(message, span);
+                assert.deepStrictEqual(error.message, message);
+                assert.deepStrictEqual(error.startIndex, span.startIndex);
+                assert.deepStrictEqual(error.length, span.length);
+                assert.deepStrictEqual(error.span, span);
+                assert.deepStrictEqual(error.afterEndIndex, span.afterEndIndex);
+                assert.deepStrictEqual(error.type, qub.IssueType.Error);
+            });
+        }
+
+        errorTest(null, new qub.Span(0, 0));
+        errorTest(undefined, new qub.Span(0, 1));
+        errorTest("", new qub.Span(57, 38));
+        errorTest("Hello!", new qub.Span(1, 2));
+    });
+
+    suite("Warning()", () => {
+        function warningTest(message: string, span: qub.Span): void {
+            test(`with ${qub.escapeAndQuote(message)} and ${span.toString()}`, () => {
+                const warning: qub.Issue = qub.Warning(message, span);
+                assert.deepStrictEqual(warning.message, message);
+                assert.deepStrictEqual(warning.startIndex, span.startIndex);
+                assert.deepStrictEqual(warning.length, span.length);
+                assert.deepStrictEqual(warning.span, span);
+                assert.deepStrictEqual(warning.afterEndIndex, span.afterEndIndex);
+                assert.deepStrictEqual(warning.type, qub.IssueType.Warning);
+            });
+        }
+
+        warningTest(null, new qub.Span(0, 0));
+        warningTest(undefined, new qub.Span(0, 1));
+        warningTest("", new qub.Span(57, 38));
+        warningTest("Hello!", new qub.Span(1, 2));
     });
 });
