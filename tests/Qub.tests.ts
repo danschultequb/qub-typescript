@@ -1159,6 +1159,279 @@ suite("Qub", () => {
         });
     });
 
+    suite("GenericIndexableReverseIterator<T>", () => {
+        test("next()", () => {
+            const list = new qub.SingleLinkList<number>([0, 1, 2, 3, 4]);
+            const iterator: qub.Iterator<number> = list.iterateReverse();
+            assert.deepStrictEqual(iterator.hasStarted(), false);
+            assert.deepStrictEqual(iterator.hasCurrent(), false);
+            assert.deepStrictEqual(iterator.getCurrent(), undefined);
+
+            assert.deepStrictEqual(iterator.toArray(), [4, 3, 2, 1, 0]);
+            assert.deepStrictEqual(iterator.hasStarted(), true);
+            assert.deepStrictEqual(iterator.hasCurrent(), false);
+            assert.deepStrictEqual(iterator.getCurrent(), undefined);
+            
+            assert.deepStrictEqual(iterator.next(), false);
+            assert.deepStrictEqual(iterator.hasStarted(), true);
+            assert.deepStrictEqual(iterator.hasCurrent(), false);
+            assert.deepStrictEqual(iterator.getCurrent(), undefined);
+        });
+    });
+
+    suite("SingleLinkList<T>", () => {
+        suite("constructor()", () => {
+            test("with no data", () => {
+                const list = new qub.SingleLinkList<number>();
+                assert.deepStrictEqual(list.getCount(), 0);
+                assert.deepStrictEqual(list.first(), undefined);
+                assert.deepStrictEqual(list.last(), undefined);
+                assert.deepStrictEqual(list.toArray(), []);
+            });
+
+            function constructorTest(values: number[]) {
+                test(`with ${qub.escapeAndQuote(JSON.stringify(values))}`, () => {
+                    const list = new qub.SingleLinkList<number>(values);
+                    const length: number = qub.getLength(values);
+                    assert.deepStrictEqual(list.getCount(), length);
+                    assert.deepStrictEqual(list.first(), length > 0 ? values[0] : undefined);
+                    assert.deepStrictEqual(list.last(), length > 0 ? values[length - 1] : undefined);
+                    assert.deepStrictEqual(list.toArray(), values ? values : []);
+                });
+            }
+
+            constructorTest(undefined);
+            constructorTest(null);
+            constructorTest([]);
+            constructorTest([0]);
+            constructorTest([0, 1]);
+        });
+
+        suite("iterateReverse()", () => {
+            function iterateReverseTest(values: number[], expectedValues: number[]): void {
+                test(`with ${qub.escapeAndQuote(JSON.stringify(values))}`, () => {
+                    const list = new qub.SingleLinkList<number>(values);
+                    assert.deepStrictEqual(list.iterateReverse().toArray(), expectedValues);
+                });
+            }
+
+            iterateReverseTest(undefined, []);
+            iterateReverseTest(null, []);
+            iterateReverseTest([], []);
+            iterateReverseTest([17], [17]);
+            iterateReverseTest([1, 2, 3], [3, 2, 1]);
+        });
+
+        suite("get()", () => {
+            function getTest(values: number[]): void {
+                const length: number = qub.getLength(values);
+                for (let i = -1; i <= length + 1; ++i) {
+                    test(`with ${qub.escapeAndQuote(JSON.stringify(values))} and ${i}`, () => {
+                        const list = new qub.SingleLinkList<number>(values);
+                        assert.deepStrictEqual(list.get(i), 0 <= i && i < length ? values[i] : undefined);
+                    });
+                }
+            }
+
+            getTest(undefined);
+            getTest(null);
+            getTest([])
+            getTest([1, 2, 3]);
+        });
+
+        suite("getFromEnd()", () => {
+            function getTest(values: number[]): void {
+                const length: number = qub.getLength(values);
+                for (let i = -1; i <= length + 1; ++i) {
+                    test(`with ${qub.escapeAndQuote(JSON.stringify(values))} and ${i}`, () => {
+                        const list = new qub.SingleLinkList<number>(values);
+                        assert.deepStrictEqual(list.getFromEnd(i), 0 <= i && i < length ? values[(length - 1) - i] : undefined);
+                    });
+                }
+            }
+
+            getTest(undefined);
+            getTest(null);
+            getTest([])
+            getTest([1, 2, 3]);
+        });
+
+        suite("set()", () => {
+            function setTest(values: number[], index: number, value: number, expectedValues: number[]) {
+                test(`with ${qub.escapeAndQuote(JSON.stringify(values))} and value ${value} at index ${index}`, () => {
+                    const list = new qub.SingleLinkList<number>(values);
+                    list.set(index, value);
+                    assert.deepStrictEqual(list.toArray(), expectedValues);
+                });
+            }
+
+            setTest(undefined, undefined, undefined, []);
+            setTest(null, null, null, []);
+            setTest([], 0, 0, []);
+            setTest([1], 1, 1, [1]);
+
+            setTest([1, 2, 3], -1, 4, [1, 2, 3]);
+            setTest([1, 2, 3], 0, 4, [4, 2, 3]);
+            setTest([1, 2, 3], 1, 5, [1, 5, 3]);
+            setTest([1, 2, 3], 2, 6, [1, 2, 6]);
+            setTest([1, 2, 3], 3, 7, [1, 2, 3]);
+        });
+
+        suite("setLast()", () => {
+            function setLastTest(values: number[], value: number, expectedValues: number[]): void {
+                test(`with ${qub.escapeAndQuote(JSON.stringify(values))} and value ${value}`, () => {
+                    const list = new qub.SingleLinkList<number>(values);
+                    list.setLast(value);
+                    assert.deepStrictEqual(list.toArray(), expectedValues);
+                });
+            }
+
+            setLastTest(undefined, undefined, []);
+            setLastTest(null, null, []);
+            setLastTest([], 0, []);
+            setLastTest([1], 2, [2]);
+            setLastTest([1, 2], 3, [1, 3]);
+            setLastTest([1, 2, 3], 4, [1, 2, 4]);
+        });
+
+        suite("any()", () => {
+            function anyTest(values: number[]): void {
+                test(`with ${qub.escapeAndQuote(JSON.stringify(values))}`, () => {
+                    const list = new qub.SingleLinkList<number>(values);
+                    assert.deepStrictEqual(list.any(), qub.getLength(values) > 0);
+                });
+            }
+
+            anyTest(undefined);
+            anyTest(null);
+            anyTest([]);
+            anyTest([1]);
+            anyTest([1, 2]);
+        });
+
+        suite("indexOf()", () => {
+            test("with no values and no comparer", () => {
+                const list = new qub.SingleLinkList<number>();
+                assert.deepStrictEqual(list.indexOf(7), undefined);
+            });
+
+            test("with values and no comparer, but no match", () => {
+                const list = new qub.SingleLinkList<number>([1, 2, 3]);
+                assert.deepStrictEqual(list.indexOf(7), undefined);
+            });
+
+            test("with values, no comparer, and a match", () => {
+                const list = new qub.SingleLinkList<number>([1, 2, 3]);
+                assert.deepStrictEqual(list.indexOf(3), 2);
+            });
+
+            test("with no values and a comparer, but no match", () => {
+                const list = new qub.SingleLinkList<number>();
+                assert.deepStrictEqual(list.indexOf(7, (lhs: number, rhs: number) => lhs % 2 === rhs % 2), undefined);
+            });
+
+            test("with values, a comparer, and a match", () => {
+                const list = new qub.SingleLinkList<number>([1, 2, 3]);
+                assert.deepStrictEqual(list.indexOf(7, (lhs: number, rhs: number) => lhs % 2 === rhs % 2), 0);
+            });
+        });
+
+        suite("removeAt()", () => {
+            function removeAtTest(values: number[], index: number, expectedValues: number[]): void {
+                test(`with ${qub.escapeAndQuote(JSON.stringify(values))} and index ${index}`, () => {
+                    const list = new qub.SingleLinkList<number>(values);
+                    list.removeAt(index);
+                    assert.deepStrictEqual(list.toArray(), expectedValues);
+                });
+            }
+
+            removeAtTest([], -1, []);
+            removeAtTest([], 0, []);
+            removeAtTest([], 1, []);
+
+            removeAtTest([1], -1, [1]);
+            removeAtTest([1], 0, []);
+            removeAtTest([1], 1, [1]);
+
+            removeAtTest([1, 2], -1, [1, 2]);
+            removeAtTest([1, 2], 0, [2]);
+            removeAtTest([1, 2], 1, [1]);
+            removeAtTest([1, 2], 2, [1, 2]);
+
+            removeAtTest([1, 2, 3], -1, [1, 2, 3]);
+            removeAtTest([1, 2, 3], 0, [2, 3]);
+            removeAtTest([1, 2, 3], 1, [1, 3]);
+            removeAtTest([1, 2, 3], 2, [1, 2]);
+            removeAtTest([1, 2, 3], 3, [1, 2, 3]);
+        });
+
+        suite("remove()", () => {
+            test("with no values and no comparer", () => {
+                const list = new qub.SingleLinkList<number>();
+                assert.deepStrictEqual(list.remove(7), undefined);
+                assert.deepStrictEqual(list.toArray(), []);
+            });
+
+            test("with values and no comparer, but no match", () => {
+                const list = new qub.SingleLinkList<number>([1, 2, 3]);
+                assert.deepStrictEqual(list.remove(7), undefined);
+                assert.deepStrictEqual(list.toArray(), [1, 2, 3]);
+            });
+
+            test("with values, no comparer, and a match", () => {
+                const list = new qub.SingleLinkList<number>([1, 2, 3]);
+                assert.deepStrictEqual(list.remove(3), 3);
+                assert.deepStrictEqual(list.toArray(), [1, 2]);
+            });
+
+            test("with no values and a comparer, but no match", () => {
+                const list = new qub.SingleLinkList<number>();
+                assert.deepStrictEqual(list.remove(7, (lhs: number, rhs: number) => lhs % 2 === rhs % 2), undefined);
+                assert.deepStrictEqual(list.toArray(), []);
+            });
+
+            test("with values, a comparer, and a match", () => {
+                const list = new qub.SingleLinkList<number>([1, 2, 3]);
+                assert.deepStrictEqual(list.remove(7, (lhs: number, rhs: number) => lhs % 2 === rhs % 2), 1);
+                assert.deepStrictEqual(list.toArray(), [2, 3]);
+            });
+        });
+
+        suite("removeFirst()", () => {
+            function removeFirstTest(values: number[], expectedRemovedValue: number, expectedValuesAfterRemove: number[]): void {
+                test(`with ${JSON.stringify(values)}`, () => {
+                    const list = new qub.SingleLinkList<number>(values);
+                    assert.deepStrictEqual(list.removeFirst(), expectedRemovedValue);
+                    assert.deepStrictEqual(list.toArray(), expectedValuesAfterRemove);
+                });
+            }
+
+            removeFirstTest(undefined, undefined, []);
+            removeFirstTest(null, undefined, []);
+            removeFirstTest([], undefined, []);
+            removeFirstTest([1], 1, []);
+            removeFirstTest([2, 3], 2, [3]);
+            removeFirstTest([4, 5, 6], 4, [5, 6]);
+        });
+
+        suite("removeLast()", () => {
+            function removeLastTest(values: number[], expectedRemovedValue: number, expectedValuesAfterRemove: number[]): void {
+                test(`with ${JSON.stringify(values)}`, () => {
+                    const list = new qub.SingleLinkList<number>(values);
+                    assert.deepStrictEqual(list.removeLast(), expectedRemovedValue);
+                    assert.deepStrictEqual(list.toArray(), expectedValuesAfterRemove);
+                });
+            }
+
+            removeLastTest(undefined, undefined, []);
+            removeLastTest(null, undefined, []);
+            removeLastTest([], undefined, []);
+            removeLastTest([1], 1, []);
+            removeLastTest([2, 3], 3, [2]);
+            removeLastTest([4, 5, 6], 6, [4, 5]);
+        });
+    });
+
     suite("DoubleLinkNode<T>", () => {
         suite("constructor()", () => {
             test("with value, no next node, and no previous node", () => {
