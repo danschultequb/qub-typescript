@@ -1,0 +1,37 @@
+{
+  "$schema": "./tasks.schema.json",
+  "ActiveTasks": {
+    "Add tasks.json": {
+      "Conceived": "2017-06-20",
+      "Started": "2017-06-20"
+    }
+  },
+  "PlannedTasks": {
+    "Add SingleLinkList<T>": {
+      "Conceived": "2017-06-20"
+    },
+    "Add DoubleLinkList<T>": {
+      "Conceived": "2017-06-20"
+    },
+    "Add List<T> interface": {
+      "Conceived": "2017-06-20"
+    }
+  },
+  "CompletedTasks": {
+    "Add DoubleLinkNode<T>": {
+      "Conceived": "2017-06-20",
+      "Started": "2017-06-20",
+      "Completed": "2017-06-20"
+    },
+    "Add SingleLinkNode<T>": {
+      "Conceived": "2017-06-20",
+      "Started": "2017-06-20",
+      "Completed": "2017-06-20"
+    },
+    "Copy Qub.ts into its own GitHub repository (qub-typescript)": {
+      "Conceived": "2017-06-15",
+      "Started": "2017-06-15",
+      "Completed": "2017-06-20"
+    }
+  }
+}
