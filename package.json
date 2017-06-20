@@ -11,7 +11,7 @@
     "build": "tsc -p .",
     "prepublish": "npm run build",
     "test": "mocha output/tests/ --ui tdd",
-    "coverage": "nyc npm test && open-cli output/coverage/index.html",
+    "coverage": "nyc npm test && open-cli output/coverage/Qub.ts.html",
     "travis-test": "nyc --check-coverage --functions 100 --lines 100 --branches 100 --statements 100 --reporter=text-lcov npm test | coveralls"
   },
   "nyc": {
