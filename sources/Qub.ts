@@ -1135,6 +1135,56 @@ export class SingleLinkNode<T> {
     }
 }
 
+/**
+ * A node that contains a value and two links.
+ */
+export class DoubleLinkNode<T> {
+    constructor(private _value: T, private _next?: DoubleLinkNode<T>, private _previous?: DoubleLinkNode<T>) {
+    }
+
+    /**
+     * Get this Node's value.
+     */
+    public get value(): T {
+        return this._value;
+    }
+
+    /**
+     * Set this Node's value.
+     */
+    public set value(value: T) {
+        this._value = value;
+    }
+
+    /**
+     * Get the next Node in the chain.
+     */
+    public get next(): DoubleLinkNode<T> {
+        return this._next;
+    }
+
+    /**
+     * Set the next Node in the chain.
+     */
+    public set next(next: DoubleLinkNode<T>) {
+        this._next = next;
+    }
+
+    /**
+     * Get the previous Node in the chain.
+     */
+    public get previous(): DoubleLinkNode<T> {
+        return this._previous;
+    }
+
+    /**
+     * Set the previous Node in the chain.
+     */
+    public set previous(next: DoubleLinkNode<T>) {
+        this._previous = next;
+    }
+}
+
 export interface KeyValuePair<KeyType, ValueType> {
     key: KeyType;
     value: ValueType;

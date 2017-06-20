@@ -1159,6 +1159,90 @@ suite("Qub", () => {
         });
     });
 
+    suite("DoubleLinkNode<T>", () => {
+        suite("constructor()", () => {
+            test("with value, no next node, and no previous node", () => {
+                const node = new qub.DoubleLinkNode<number>(0);
+                assert.deepStrictEqual(node.value, 0);
+                assert.deepStrictEqual(node.next, undefined);
+                assert.deepStrictEqual(node.previous, undefined);
+            });
+
+            test("with value, undefined next node, and no previous node", () => {
+                const node = new qub.DoubleLinkNode<number>(1, undefined);
+                assert.deepStrictEqual(node.value, 1);
+                assert.deepStrictEqual(node.next, undefined);
+                assert.deepStrictEqual(node.previous, undefined);
+            });
+
+            test("with value, null next node, and no previous node", () => {
+                const node = new qub.DoubleLinkNode<number>(2, null);
+                assert.deepStrictEqual(node.value, 2);
+                assert.deepStrictEqual(node.next, null);
+                assert.deepStrictEqual(node.previous, undefined);
+            });
+
+            test("with value, next node, and no previous node", () => {
+                const next = new qub.DoubleLinkNode<number>(4);
+                const node = new qub.DoubleLinkNode<number>(3, next);
+                assert.deepStrictEqual(node.value, 3);
+                assert.deepStrictEqual(node.next, next);
+                assert.deepStrictEqual(node.previous, undefined);
+            });
+
+            test("with value, undefined next node, and previous node", () => {
+                const previous = new qub.DoubleLinkNode<number>(4);
+                const node = new qub.DoubleLinkNode<number>(3, undefined, previous);
+                assert.deepStrictEqual(node.value, 3);
+                assert.deepStrictEqual(node.next, undefined);
+                assert.deepStrictEqual(node.previous, previous);
+            });
+        });
+
+        suite("set value()", () => {
+            function setValueTest(value: string): void {
+                test(`with ${qub.escapeAndQuote(value)}`, () => {
+                    const node = new qub.DoubleLinkNode<string>("test");
+                    node.value = value;
+                    assert.deepStrictEqual(node.value, value);
+                });
+            }
+
+            setValueTest(undefined);
+            setValueTest(null);
+            setValueTest("");
+            setValueTest("apples");
+        });
+
+        suite("set next()", () => {
+            function setNextTest(next: qub.DoubleLinkNode<string>): void {
+                test(`with ${qub.escapeAndQuote(JSON.stringify(next))}`, () => {
+                    const node = new qub.DoubleLinkNode<string>("test");
+                    node.next = next;
+                    assert.deepStrictEqual(node.next, next);
+                });
+            }
+
+            setNextTest(undefined);
+            setNextTest(null);
+            setNextTest(new qub.DoubleLinkNode<string>("oops!"));
+        });
+
+        suite("set previous()", () => {
+            function setPreviousTest(previous: qub.DoubleLinkNode<string>): void {
+                test(`with ${qub.escapeAndQuote(JSON.stringify(previous))}`, () => {
+                    const node = new qub.DoubleLinkNode<string>("test");
+                    node.previous = previous;
+                    assert.deepStrictEqual(node.previous, previous);
+                });
+            }
+
+            setPreviousTest(undefined);
+            setPreviousTest(null);
+            setPreviousTest(new qub.DoubleLinkNode<string>("oops!"));
+        });
+    });
+
     suite("Stack", () => {
         test("constructor()", () => {
             const s = new qub.Stack<string>();
