@@ -1101,6 +1101,64 @@ suite("Qub", () => {
         });
     });
 
+    suite("SingleLinkNode<T>", () => {
+        suite("constructor()", () => {
+            test("with value and no next node", () => {
+                const node = new qub.SingleLinkNode<number>(0);
+                assert.deepStrictEqual(node.value, 0);
+                assert.deepStrictEqual(node.next, undefined);
+            });
+
+            test("with value and undefined next node", () => {
+                const node = new qub.SingleLinkNode<number>(1, undefined);
+                assert.deepStrictEqual(node.value, 1);
+                assert.deepStrictEqual(node.next, undefined);
+            });
+
+            test("with value and null next node", () => {
+                const node = new qub.SingleLinkNode<number>(2, null);
+                assert.deepStrictEqual(node.value, 2);
+                assert.deepStrictEqual(node.next, null);
+            });
+
+            test("with value and next node", () => {
+                const next = new qub.SingleLinkNode<number>(4);
+                const node = new qub.SingleLinkNode<number>(3, next);
+                assert.deepStrictEqual(node.value, 3);
+                assert.deepStrictEqual(node.next, next);
+            });
+        });
+
+        suite("set value()", () => {
+            function setValueTest(value: string): void {
+                test(`with ${qub.escapeAndQuote(value)}`, () => {
+                    const node = new qub.SingleLinkNode<string>("test");
+                    node.value = value;
+                    assert.deepStrictEqual(node.value, value);
+                });
+            }
+
+            setValueTest(undefined);
+            setValueTest(null);
+            setValueTest("");
+            setValueTest("apples");
+        });
+
+        suite("set next()", () => {
+            function setNextTest(next: qub.SingleLinkNode<string>): void {
+                test(`with ${qub.escapeAndQuote(JSON.stringify(next))}`, () => {
+                    const node = new qub.SingleLinkNode<string>("test");
+                    node.next = next;
+                    assert.deepStrictEqual(node.next, next);
+                });
+            }
+
+            setNextTest(undefined);
+            setNextTest(null);
+            setNextTest(new qub.SingleLinkNode<string>("oops!"));
+        });
+    });
+
     suite("Stack", () => {
         test("constructor()", () => {
             const s = new qub.Stack<string>();

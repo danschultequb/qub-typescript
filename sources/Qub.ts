@@ -1099,6 +1099,42 @@ export class ArrayList<T> extends IndexableBase<T> {
     }
 }
 
+/**
+ * A node that contains a value and a single link.
+ */
+export class SingleLinkNode<T> {
+    constructor(private _value: T, private _next?: SingleLinkNode<T>) {
+    }
+
+    /**
+     * Get this Node's value.
+     */
+    public get value(): T {
+        return this._value;
+    }
+
+    /**
+     * Set this Node's value.
+     */
+    public set value(value: T) {
+        this._value = value;
+    }
+
+    /**
+     * Get the next Node in the chain.
+     */
+    public get next(): SingleLinkNode<T> {
+        return this._next;
+    }
+
+    /**
+     * Set the next Node in the chain.
+     */
+    public set next(next: SingleLinkNode<T>) {
+        this._next = next;
+    }
+}
+
 export interface KeyValuePair<KeyType, ValueType> {
     key: KeyType;
     value: ValueType;
