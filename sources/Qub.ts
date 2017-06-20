@@ -89,6 +89,12 @@ export interface Iterator<T> {
     first(condition?: (value: T) => boolean): T;
 
     /**
+     * Get the last value in this Iterator. If the Iterator is empty or has no values that match the
+     * provided condition, then undefined will be returned.
+     */
+    last(condition?: (value: T) => boolean): T;
+
+    /**
      * Place each of the values of this Iterator into an array.
      */
     toArray(): T[];
@@ -186,6 +192,27 @@ export abstract class IteratorBase<T> implements Iterator<T> {
         }
         else {
             result = this.where(condition).first();
+        }
+        return result;
+    }
+
+    public last(condition?: (value: T) => boolean): T {
+        let result: T;
+        if (!condition) {
+            if (!this.hasStarted()) {
+                this.next();
+            }
+
+            if (this.hasCurrent()) {
+                result = this.getCurrent();
+            }
+
+            while (this.next()) {
+                result = this.getCurrent();
+            }
+        }
+        else {
+            result = this.where(condition).last();
         }
         return result;
     }
@@ -418,6 +445,10 @@ class MapIterator<OuterT, InnerT> implements Iterator<OuterT> {
         return this.where(condition).first();
     }
 
+    public last(condition?: (value: OuterT) => boolean): OuterT {
+        return this.where(condition).last();
+    }
+
     public toArray(): OuterT[] {
         const result: OuterT[] = [];
         for (const value of this) {
@@ -485,11 +516,6 @@ export interface Iterable<T> {
     iterate(): Iterator<T>;
 
     /**
-     * Create an iterator for this collection that iterates the collection in reverse order.
-     */
-    iterateReverse(): Iterator<T>;
-
-    /**
      * Get whether or not this collection contains any values that match the provided condition. If
      * the condition is not defined, then this function returns whether the collection contains any
      * values.
@@ -500,19 +526,6 @@ export interface Iterable<T> {
      * Get the number of values that are contained in this collection.
      */
     getCount(): number;
-
-    /**
-     * Get the value in this collection at the provided index. If the provided index is not defined
-     * or is outside of this Iterable's bounds, then undefined will be returned.
-     */
-    getElement(index: number): T;
-
-    /**
-     * Get the value in this collection at the provided index from the end of the collection. If the
-     * provided index is not defined or is outside of this Iterable's bounds, then undefined will be
-     * returned.
-     */
-    getElementFromEnd(index: number): T;
 
     /**
      * Get whether or not this Iterable contians the provided value using the provided comparison
@@ -592,38 +605,12 @@ export abstract class IterableBase<T> implements Iterable<T> {
 
     public abstract iterate(): Iterator<T>;
 
-    public abstract iterateReverse(): Iterator<T>;
-
     public any(condition?: (value: T) => boolean): boolean {
         return this.iterate().any(condition);
     }
 
     public getCount(): number {
         return this.iterate().getCount();
-    }
-
-    public getElement(index: number): T {
-        let result: T;
-        if (0 <= index) {
-            const iterator: Iterator<T> = this.iterate();
-            while (iterator.next() && 0 < index) {
-                --index;
-            }
-            result = iterator.getCurrent();
-        }
-        return result;
-    }
-
-    public getElementFromEnd(index: number): T {
-        let result: T;
-        if (0 <= index) {
-            const iterator: Iterator<T> = this.iterateReverse();
-            while (iterator.next() && 0 < index) {
-                --index;
-            }
-            result = iterator.getCurrent();
-        }
-        return result;
     }
 
     public contains(value: T, comparison?: (iterableValue: T, value: T) => boolean): boolean {
@@ -639,7 +626,7 @@ export abstract class IterableBase<T> implements Iterable<T> {
     }
 
     public last(condition?: (value: T) => boolean): T {
-        return this.iterateReverse().first(condition);
+        return this.iterate().last(condition);
     }
 
     public where(condition: (value: T) => boolean): Iterable<T> {
@@ -727,10 +714,6 @@ class WhereIterable<T> extends IterableBase<T> {
     public iterate(): Iterator<T> {
         return this._innerIterable.iterate().where(this._condition);
     }
-
-    public iterateReverse(): Iterator<T> {
-        return this._innerIterable.iterateReverse().where(this._condition);
-    }
 }
 
 class SkipIterable<T> extends IterableBase<T> {
@@ -740,10 +723,6 @@ class SkipIterable<T> extends IterableBase<T> {
 
     public iterate(): Iterator<T> {
         return this._innerIterable.iterate().skip(this._toSkip);
-    }
-
-    public iterateReverse(): Iterator<T> {
-        return this._innerIterable.iterateReverse().take(this.getCount());
     }
 
     public getCount(): number {
@@ -756,10 +735,6 @@ class SkipIterable<T> extends IterableBase<T> {
         }
         return result;
     }
-
-    public getElement(index: number): T {
-        return this._innerIterable.getElement(index + this._toSkip);
-    }
 }
 
 class TakeIterable<T> extends IterableBase<T> {
@@ -771,20 +746,12 @@ class TakeIterable<T> extends IterableBase<T> {
         return this._innerIterable.iterate().take(this._toTake);
     }
 
-    public iterateReverse(): Iterator<T> {
-        return this._innerIterable.iterateReverse().skip(this._innerIterable.getCount() - this._toTake);
-    }
-
     public getCount(): number {
         let result: number = this._innerIterable.getCount();
         if (this._toTake < result) {
             result = this._toTake;
         }
         return result;
-    }
-
-    public getElement(index: number): T {
-        return 0 <= index && index < this.getCount() ? this._innerIterable.getElement(index) : undefined;
     }
 }
 
@@ -800,24 +767,12 @@ class MapIterable<OuterT, InnerT> implements Iterable<OuterT> {
         return this._innerIterable.iterate().map(this._mapFunction);
     }
 
-    public iterateReverse(): Iterator<OuterT> {
-        return this._innerIterable.iterateReverse().map(this._mapFunction);
-    }
-
     public any(condition?: (value: OuterT) => boolean): boolean {
         return this.iterate().any(condition);
     }
 
     public getCount(): number {
         return this._innerIterable.getCount();
-    }
-
-    public getElement(index: number): OuterT {
-        return this._mapFunction && isDefined(index) && 0 <= index && index < this.getCount() ? this._mapFunction(this._innerIterable.getElement(index)) : undefined;
-    }
-
-    public getElementFromEnd(index: number): OuterT {
-        return this._mapFunction && isDefined(index) && 0 <= index && index < this.getCount() ? this._mapFunction(this._innerIterable.getElementFromEnd(index)) : undefined;
     }
 
     public contains(value: OuterT, comparison?: (lhs: OuterT, rhs: OuterT) => boolean): boolean {
@@ -833,7 +788,7 @@ class MapIterable<OuterT, InnerT> implements Iterable<OuterT> {
     }
 
     public last(condition?: (value: OuterT) => boolean): OuterT {
-        return this.iterateReverse().first(condition);
+        return this.iterate().last(condition);
     }
 
     public where(condition: (value: OuterT) => boolean): Iterable<OuterT> {
@@ -926,10 +881,6 @@ class ConcatenateIterable<T> extends IterableBase<T> {
     public iterate(): Iterator<T> {
         return this._first.iterate().concatenate(this._second.iterate());
     }
-
-    public iterateReverse(): Iterator<T> {
-        return this._second.iterateReverse().concatenate(this._first.iterateReverse());
-    }
 }
 
 export abstract class ArrayListIterator<T> extends IteratorBase<T> {
@@ -955,8 +906,36 @@ export abstract class ArrayListIterator<T> extends IteratorBase<T> {
     public abstract next(): boolean;
 
     public getCurrent(): T {
-        return this._arrayList.getElement(this._currentIndex);
+        return this._arrayList.get(this._currentIndex);
     }
+}
+
+export interface Indexable<T> extends Iterable<T> {
+    /**
+     * Create an iterator for this collection that iterates the collection in reverse order.
+     */
+    iterateReverse(): Iterator<T>;
+
+    /**
+     * Get the value in this collection at the provided index. If the provided index is not defined
+     * or is outside of this Iterable's bounds, then undefined will be returned.
+     */
+    get(index: number): T;
+
+    /**
+     * Get the value in this collection at the provided index from the end of the collection. If the
+     * provided index is not defined or is outside of this Iterable's bounds, then undefined will be
+     * returned.
+     */
+    getFromEnd(index: number): T;
+}
+
+export abstract class IndexableBase<T> extends IterableBase<T> implements Indexable<T> {
+    public abstract iterateReverse(): Iterator<T>;
+
+    public abstract get(index: number): T;
+
+    public abstract getFromEnd(index: number): T;
 }
 
 class ArrayListForwardIterator<T> extends ArrayListIterator<T> {
@@ -999,7 +978,7 @@ class ArrayListReverseIterator<T> extends ArrayListIterator<T> {
     }
 }
 
-export class ArrayList<T> extends IterableBase<T> {
+export class ArrayList<T> extends IndexableBase<T> {
     private _data: T[] = [];
     private _count: number = 0;
 
@@ -1017,12 +996,16 @@ export class ArrayList<T> extends IterableBase<T> {
         return new ArrayListReverseIterator<T>(this);
     }
 
-    public getElement(index: number): T {
+    public get(index: number): T {
         let result: T;
         if (isDefined(index) && 0 <= index && index < this._count) {
             result = this._data[index];
         }
         return result;
+    }
+
+    public getFromEnd(index: number): T {
+        return this.get((this.getCount() - 1) - index);
     }
 
     /**
