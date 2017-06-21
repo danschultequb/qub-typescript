@@ -1129,6 +1129,23 @@ suite("Qub", () => {
             });
         });
 
+        suite("iterate()", () => {
+            test("with 0", () => {
+                const node = new qub.SingleLinkNode<number>(0);
+                assert.deepStrictEqual(node.toArray(), [0]);
+            });
+
+            test("with 0 -> 1", () => {
+                const node = new qub.SingleLinkNode<number>(0, new qub.SingleLinkNode<number>(1));
+                assert.deepStrictEqual(node.toArray(), [0, 1]);
+            });
+
+            test("with 0 -> 1 -> 2", () => {
+                const node = new qub.SingleLinkNode<number>(0, new qub.SingleLinkNode<number>(1, new qub.SingleLinkNode<number>(2)));
+                assert.deepStrictEqual(node.toArray(), [0, 1, 2]);
+            });
+        });
+
         suite("set value()", () => {
             function setValueTest(value: string): void {
                 test(`with ${qub.escapeAndQuote(value)}`, () => {

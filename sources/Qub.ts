@@ -1102,8 +1102,13 @@ export class ArrayList<T> extends IndexableBase<T> {
 /**
  * A node that contains a value and a single link.
  */
-export class SingleLinkNode<T> {
+export class SingleLinkNode<T> extends IterableBase<T> {
     constructor(private _value: T, private _next?: SingleLinkNode<T>) {
+        super();
+    }
+
+    public iterate(): Iterator<T> {
+        return new SingleLinkNodeIterator<T>(this);
     }
 
     /**
