@@ -1135,6 +1135,268 @@ export class SingleLinkNode<T> {
     }
 }
 
+class SingleLinkNodeIterator<T> extends IteratorBase<T> {
+    private _hasStarted: boolean = false;
+
+    constructor(private _currentNode: SingleLinkNode<T>) {
+        super();
+    }
+
+    public hasStarted(): boolean {
+        return this._hasStarted;
+    }
+
+    public hasCurrent(): boolean {
+        return this._hasStarted && this._currentNode ? true : false;
+    }
+
+    public getCurrent(): T {
+        return this.hasCurrent() ? this._currentNode.value : undefined;
+    }
+
+    public next(): boolean {
+        if (!this.hasStarted()) {
+            this._hasStarted = true;
+        }
+        else if (this._currentNode) {
+            this._currentNode = this._currentNode.next;
+        }
+
+        return this.hasCurrent();
+    }
+}
+
+class GenericIndexableReverseIterator<T> extends IteratorBase<T> {
+    private _currentIndex: number;
+
+    constructor(private _indexable: Indexable<T>) {
+        super();
+    }
+
+    public hasStarted(): boolean {
+        return isDefined(this._currentIndex);
+    }
+
+    public hasCurrent(): boolean {
+        return this.hasStarted() && 0 <= this._currentIndex;
+    }
+
+    public getCurrent(): T {
+        return this.hasCurrent() ? this._indexable.get(this._currentIndex) : undefined;
+    }
+
+    public next(): boolean {
+        if (!this.hasStarted()) {
+            this._currentIndex = this._indexable.getCount() - 1;
+        }
+        else if (this.hasCurrent()) {
+            this._currentIndex--;
+        }
+        return this.hasCurrent();
+    }
+}
+
+export class SingleLinkList<T> extends IndexableBase<T> {
+    private _head: SingleLinkNode<T>;
+    private _tail: SingleLinkNode<T>;
+
+    constructor(data: T[] = []) {
+        super();
+
+        this.addAll(data);
+    }
+
+    public iterate(): Iterator<T> {
+        return new SingleLinkNodeIterator<T>(this._head);
+    }
+
+    public iterateReverse(): Iterator<T> {
+        return new GenericIndexableReverseIterator<T>(this);
+    }
+
+    private getNode(index: number): SingleLinkNode<T> {
+        let resultNode: SingleLinkNode<T>;
+        if (0 <= index) {
+            resultNode = this._head;
+            while (resultNode && 0 < index) {
+                resultNode = resultNode.next;
+                --index;
+            }
+        }
+        return resultNode;
+    }
+
+    public get(index: number): T {
+        const resultNode: SingleLinkNode<T> = this.getNode(index);
+        return resultNode ? resultNode.value : undefined;
+    }
+
+    public getFromEnd(index: number): T {
+        let resultNode: SingleLinkNode<T> = undefined;
+
+        if (index >= 0) {
+            let searchNode: SingleLinkNode<T> = this._head;
+            while (searchNode && index > 0) {
+                searchNode = searchNode.next;
+                --index;
+            }
+
+            if (searchNode) {
+                resultNode = this._head;
+                while (searchNode.next) {
+                    resultNode = resultNode.next;
+                    searchNode = searchNode.next;
+                }
+            }
+        }
+
+        return resultNode ? resultNode.value : undefined;
+    }
+
+    /**
+     * Set the ArrayList value at the provided index to be the provided value. If the index is not
+     * defined or is outside of the Arraylist's bounds, then this function will do nothing.
+     */
+    public set(index: number, value: T): void {
+        const node: SingleLinkNode<T> = this.getNode(index);
+        if (node) {
+            node.value = value;
+        }
+    }
+
+    /**
+     * Set the last ArrayList value to be the provided value. If the ArrayList is empty, then this
+     * function will do nothing.
+     */
+    public setLast(value: T): void {
+        if (this._tail) {
+            this._tail.value = value;
+        }
+    }
+
+    public any(condition?: (value: T) => boolean): boolean {
+        return isDefined(this._head);
+    }
+
+    public getCount(): number {
+        let count: number = 0;
+        let searchNode: SingleLinkNode<T> = this._head;
+        while (searchNode) {
+            ++count;
+            searchNode = searchNode.next;
+        }
+        return count;
+    }
+
+    public add(value: T): void {
+        const nodeToAdd = new SingleLinkNode<T>(value);
+
+        if (!this._head) {
+            this._head = nodeToAdd;
+            this._tail = nodeToAdd;
+        }
+        else {
+            this._tail.next = nodeToAdd;
+            this._tail = nodeToAdd;
+        }
+    }
+
+    public addAll(values: T[] | Iterable<T>): void {
+        if (values) {
+            for (const value of values) {
+                this.add(value);
+            }
+        }
+    }
+
+    public indexOf(value: T, comparer?: (lhs: T, rhs: T) => boolean): number {
+        if (!comparer) {
+            comparer = (lhs: T, rhs: T) => lhs === rhs;
+        }
+
+        let result: number = undefined;
+        let index: number = 0;
+        for (const nodeValue of this) {
+            if (comparer(nodeValue, value)) {
+                result = index;
+                break;
+            }
+            else {
+                ++index;
+            }
+        }
+
+        return result;
+    }
+
+    public removeAt(index: number): T {
+        let result: T;
+        if (isDefined(index) && 0 <= index) {
+            if (index === 0) {
+                if (this._head) {
+                    result = this._head.value;
+                    if (this._head === this._tail) {
+                        this._head = undefined;
+                        this._tail = undefined;
+                    }
+                    else {
+                        this._head = this._head.next;
+                    }
+                }
+            }
+            else {
+                const previousNode: SingleLinkNode<T> = this.getNode(index - 1);
+                if (previousNode && previousNode.next) {
+                    result = previousNode.next.value;
+                    previousNode.next = previousNode.next.next;
+                }
+            }
+        }
+        return result;
+    }
+
+    public remove(value: T, comparer?: (lhs: T, rhs: T) => boolean): T {
+        if (!comparer) {
+            comparer = (lhs: T, rhs: T) => lhs === rhs;
+        }
+
+        let previousNode: SingleLinkNode<T>;
+        let searchNode: SingleLinkNode<T> = this._head;
+        while (searchNode) {
+            if (comparer(searchNode.value, value)) {
+                break;
+            }
+            else {
+                previousNode = searchNode;
+                searchNode = searchNode.next;
+            }
+        }
+
+        if (searchNode) {
+            if (!previousNode) {
+                this._head = searchNode.next;
+            }
+            else {
+                previousNode.next = searchNode.next;
+            }
+
+            if (searchNode === this._tail) {
+                this._tail = previousNode;
+            }
+        }
+
+        return searchNode ? searchNode.value : undefined;
+    }
+
+    public removeFirst(): T {
+        return this.removeAt(0);
+    }
+
+    public removeLast(): T {
+        return this.removeAt(this.getCount() - 1);
+    }
+}
+
 /**
  * A node that contains a value and two links.
  */
