@@ -883,6 +883,81 @@ class ConcatenateIterable<T> extends IterableBase<T> {
     }
 }
 
+export interface Indexable<T> extends Iterable<T> {
+    /**
+     * Create an iterator for this collection that iterates the collection in reverse order.
+     */
+    iterateReverse(): Iterator<T>;
+
+    /**
+     * Get the value in this collection at the provided index. If the provided index is not defined
+     * or is outside of this Indexable's bounds, then undefined will be returned.
+     */
+    get(index: number): T;
+
+    /**
+     * Get the value in this collection at the provided index from the end of the collection. If the
+     * provided index is not defined or is outside of this Indexable's bounds, then undefined will
+     * be returned.
+     */
+    getFromEnd(index: number): T;
+
+    /**
+     * Set the value in this collection at the provided index. If the provided index is not defined
+     * or is outside of this Indexable's bounds, then nothing will happen.
+     */
+    set(index: number, value: T): void;
+}
+
+export abstract class IndexableBase<T> extends IterableBase<T> implements Indexable<T> {
+    public abstract iterateReverse(): Iterator<T>;
+
+    public abstract get(index: number): T;
+
+    public abstract getFromEnd(index: number): T;
+    
+    public abstract set(index: number, value: T): void;
+
+    public indexOf(value: T, comparer?: (lhs: T, rhs: T) => boolean): number {
+        if (!comparer) {
+            comparer = (lhs: T, rhs: T) => lhs === rhs;
+        }
+
+        let result: number;
+
+        let searchIndex: number = 0;
+        for (const searchValue of this) {
+            if (comparer(searchValue, value)) {
+                result = searchIndex;
+                break;
+            }
+            else {
+                ++searchIndex;
+            }
+        }
+
+        return result;
+    }
+}
+
+export interface List<T> extends Indexable<T> {
+    add(value: T): void;
+
+    addAll(values: T[] | Iterable<T>): void;
+}
+
+export abstract class ListBase<T> extends IndexableBase<T> implements List<T> {
+    public abstract add(value: T): void;
+
+    public addAll(values: T[] | Iterable<T>): void {
+        if (values) {
+            for (const value of values) {
+                this.add(value);
+            }
+        }
+    }
+}
+
 export abstract class ArrayListIterator<T> extends IteratorBase<T> {
     protected _currentIndex: number;
 
@@ -908,34 +983,6 @@ export abstract class ArrayListIterator<T> extends IteratorBase<T> {
     public getCurrent(): T {
         return this._arrayList.get(this._currentIndex);
     }
-}
-
-export interface Indexable<T> extends Iterable<T> {
-    /**
-     * Create an iterator for this collection that iterates the collection in reverse order.
-     */
-    iterateReverse(): Iterator<T>;
-
-    /**
-     * Get the value in this collection at the provided index. If the provided index is not defined
-     * or is outside of this Iterable's bounds, then undefined will be returned.
-     */
-    get(index: number): T;
-
-    /**
-     * Get the value in this collection at the provided index from the end of the collection. If the
-     * provided index is not defined or is outside of this Iterable's bounds, then undefined will be
-     * returned.
-     */
-    getFromEnd(index: number): T;
-}
-
-export abstract class IndexableBase<T> extends IterableBase<T> implements Indexable<T> {
-    public abstract iterateReverse(): Iterator<T>;
-
-    public abstract get(index: number): T;
-
-    public abstract getFromEnd(index: number): T;
 }
 
 class ArrayListForwardIterator<T> extends ArrayListIterator<T> {
@@ -978,7 +1025,7 @@ class ArrayListReverseIterator<T> extends ArrayListIterator<T> {
     }
 }
 
-export class ArrayList<T> extends IndexableBase<T> {
+export class ArrayList<T> extends ListBase<T> {
     private _data: T[] = [];
     private _count: number = 0;
 
@@ -1044,25 +1091,6 @@ export class ArrayList<T> extends IndexableBase<T> {
             this._data[this._count] = value;
         }
         this._count++;
-    }
-
-    public addAll(values: T[] | Iterable<T>): void {
-        if (values) {
-            for (const value of values) {
-                this.add(value);
-            }
-        }
-    }
-
-    public indexOf(value: T, comparer?: (lhs: T, rhs: T) => boolean): number {
-        let result: number;
-        for (let i = 0; i < this._count; ++i) {
-            if (comparer ? comparer(this._data[i], value) : this._data[i] === value) {
-                result = i;
-                break;
-            }
-        }
-        return result;
     }
 
     public removeAt(index: number): T {
@@ -1201,14 +1229,14 @@ class GenericIndexableReverseIterator<T> extends IteratorBase<T> {
     }
 }
 
-export class SingleLinkList<T> extends IndexableBase<T> {
+export class SingleLinkList<T> extends ListBase<T> {
     private _head: SingleLinkNode<T>;
     private _tail: SingleLinkNode<T>;
 
-    constructor(data: T[] = []) {
+    constructor(values?: T[] | Iterable<T>) {
         super();
 
-        this.addAll(data);
+        this.addAll(values);
     }
 
     public iterate(): Iterator<T> {
@@ -1304,34 +1332,6 @@ export class SingleLinkList<T> extends IndexableBase<T> {
             this._tail.next = nodeToAdd;
             this._tail = nodeToAdd;
         }
-    }
-
-    public addAll(values: T[] | Iterable<T>): void {
-        if (values) {
-            for (const value of values) {
-                this.add(value);
-            }
-        }
-    }
-
-    public indexOf(value: T, comparer?: (lhs: T, rhs: T) => boolean): number {
-        if (!comparer) {
-            comparer = (lhs: T, rhs: T) => lhs === rhs;
-        }
-
-        let result: number = undefined;
-        let index: number = 0;
-        for (const nodeValue of this) {
-            if (comparer(nodeValue, value)) {
-                result = index;
-                break;
-            }
-            else {
-                ++index;
-            }
-        }
-
-        return result;
     }
 
     public removeAt(index: number): T {
