@@ -10,6 +10,11 @@
     }
   },
   "CompletedTasks": {
+    "Make SingleLinkNode<T> an Iterable<T>": {
+      "Conceived": "2017-06-20",
+      "Started": "2017-06-20",
+      "Completed": "2017-06-20"
+    },
     "Add SingleLinkList<T>": {
       "Conceived": "2017-06-20",
       "Started": "2017-06-20",
