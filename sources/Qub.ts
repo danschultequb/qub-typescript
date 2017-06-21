@@ -940,6 +940,68 @@ export abstract class IndexableBase<T> extends IterableBase<T> implements Indexa
     }
 }
 
+class IndexableIterator<T> extends IteratorBase<T> {
+    private _currentIndex: number;
+    private _count: number;
+
+    constructor(private _indexable: Indexable<T>) {
+        super();
+    }
+
+    public hasStarted(): boolean {
+        return isDefined(this._currentIndex);
+    }
+
+    public hasCurrent(): boolean {
+        return this.hasStarted() && this._currentIndex < this._count;
+    }
+
+    public getCurrent(): T {
+        return this.hasCurrent() ? this._indexable.get(this._currentIndex) : undefined;
+    }
+
+    public next(): boolean {
+        if (!this.hasStarted()) {
+            this._currentIndex = 0;
+            this._count = this._indexable.getCount();
+        }
+        else if (this.hasCurrent()) {
+            this._currentIndex++;
+        }
+        return this.hasCurrent();
+    }
+}
+
+class IndexableReverseIterator<T> extends IteratorBase<T> {
+    private _currentIndex: number;
+
+    constructor(private _indexable: Indexable<T>) {
+        super();
+    }
+
+    public hasStarted(): boolean {
+        return isDefined(this._currentIndex);
+    }
+
+    public hasCurrent(): boolean {
+        return this.hasStarted() && 0 <= this._currentIndex;
+    }
+
+    public getCurrent(): T {
+        return this.hasCurrent() ? this._indexable.get(this._currentIndex) : undefined;
+    }
+
+    public next(): boolean {
+        if (!this.hasStarted()) {
+            this._currentIndex = this._indexable.getCount() - 1;
+        }
+        else if (this.hasCurrent()) {
+            this._currentIndex--;
+        }
+        return this.hasCurrent();
+    }
+}
+
 export interface List<T> extends Indexable<T> {
     add(value: T): void;
 
@@ -958,73 +1020,6 @@ export abstract class ListBase<T> extends IndexableBase<T> implements List<T> {
     }
 }
 
-export abstract class ArrayListIterator<T> extends IteratorBase<T> {
-    protected _currentIndex: number;
-
-    constructor(protected _arrayList: ArrayList<T>) {
-        super();
-    }
-
-    /**
-     * Whether or not this ArrayListIterator is at the end of its iterating.
-     */
-    protected abstract atEnd(): boolean;
-
-    public hasStarted(): boolean {
-        return isDefined(this._currentIndex);
-    }
-
-    public hasCurrent(): boolean {
-        return this.hasStarted() && !this.atEnd();
-    }
-
-    public abstract next(): boolean;
-
-    public getCurrent(): T {
-        return this._arrayList.get(this._currentIndex);
-    }
-}
-
-class ArrayListForwardIterator<T> extends ArrayListIterator<T> {
-    constructor(arrayList: ArrayList<T>) {
-        super(arrayList);
-    }
-
-    protected atEnd(): boolean {
-        return this._currentIndex === this._arrayList.getCount();
-    }
-
-    public next(): boolean {
-        if (!this.hasStarted()) {
-            this._currentIndex = 0;
-        }
-        else if (!this.atEnd()) {
-            ++this._currentIndex;
-        }
-        return !this.atEnd();
-    }
-}
-
-class ArrayListReverseIterator<T> extends ArrayListIterator<T> {
-    constructor(arrayList: ArrayList<T>) {
-        super(arrayList);
-    }
-
-    protected atEnd(): boolean {
-        return this._currentIndex < 0;
-    }
-
-    public next(): boolean {
-        if (!this.hasStarted()) {
-            this._currentIndex = this._arrayList.getCount() - 1;
-        }
-        else if (!this.atEnd()) {
-            --this._currentIndex;
-        }
-        return !this.atEnd();
-    }
-}
-
 export class ArrayList<T> extends ListBase<T> {
     private _data: T[] = [];
     private _count: number = 0;
@@ -1035,12 +1030,12 @@ export class ArrayList<T> extends ListBase<T> {
         this.addAll(values);
     }
 
-    public iterate(): ArrayListIterator<T> {
-        return new ArrayListForwardIterator<T>(this);
+    public iterate(): Iterator<T> {
+        return new IndexableIterator<T>(this);
     }
 
-    public iterateReverse(): ArrayListIterator<T> {
-        return new ArrayListReverseIterator<T>(this);
+    public iterateReverse(): Iterator<T> {
+        return new IndexableReverseIterator<T>(this);
     }
 
     public get(index: number): T {
@@ -1199,36 +1194,6 @@ class SingleLinkNodeIterator<T> extends IteratorBase<T> {
     }
 }
 
-class GenericIndexableReverseIterator<T> extends IteratorBase<T> {
-    private _currentIndex: number;
-
-    constructor(private _indexable: Indexable<T>) {
-        super();
-    }
-
-    public hasStarted(): boolean {
-        return isDefined(this._currentIndex);
-    }
-
-    public hasCurrent(): boolean {
-        return this.hasStarted() && 0 <= this._currentIndex;
-    }
-
-    public getCurrent(): T {
-        return this.hasCurrent() ? this._indexable.get(this._currentIndex) : undefined;
-    }
-
-    public next(): boolean {
-        if (!this.hasStarted()) {
-            this._currentIndex = this._indexable.getCount() - 1;
-        }
-        else if (this.hasCurrent()) {
-            this._currentIndex--;
-        }
-        return this.hasCurrent();
-    }
-}
-
 export class SingleLinkList<T> extends ListBase<T> {
     private _head: SingleLinkNode<T>;
     private _tail: SingleLinkNode<T>;
@@ -1244,7 +1209,7 @@ export class SingleLinkList<T> extends ListBase<T> {
     }
 
     public iterateReverse(): Iterator<T> {
-        return new GenericIndexableReverseIterator<T>(this);
+        return new IndexableReverseIterator<T>(this);
     }
 
     private getNode(index: number): SingleLinkNode<T> {

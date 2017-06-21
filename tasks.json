@@ -1,19 +1,6 @@
 {
   "$schema": "./tasks.schema.json",
-  "ActiveTasks": {
-    "Replace ArrayListReverseIterator<T> with GenericIndexableReverseIterator<T>": {
-      "Conceived": "2017-06-21",
-      "Started": "2017-06-21"
-    },
-    "Rename GenericIndexableReverseIterator<T> to IndexableReverseIterator<T>": {
-      "Conceived": "2017-06-21",
-      "Started": "2017-06-21"
-    },
-    "Add IndexableIterator<T>": {
-      "Conceived": "2017-06-21",
-      "Started": "2017-06-21"
-    }
-  },
+  "ActiveTasks": {},
   "PlannedTasks": {
     "Add DoubleLinkList<T>": {
       "Conceived": "2017-06-20"
@@ -26,6 +13,21 @@
     }
   },
   "CompletedTasks": {
+    "Replace ArrayListReverseIterator<T> with GenericIndexableReverseIterator<T>": {
+      "Conceived": "2017-06-21",
+      "Started": "2017-06-21",
+      "Completed": "2017-06-21"
+    },
+    "Rename GenericIndexableReverseIterator<T> to IndexableReverseIterator<T>": {
+      "Conceived": "2017-06-21",
+      "Started": "2017-06-21",
+      "Completed": "2017-06-21"
+    },
+    "Add IndexableIterator<T>": {
+      "Conceived": "2017-06-21",
+      "Started": "2017-06-21",
+      "Completed": "2017-06-21"
+    },
     "Add List<T> interface": {
       "Conceived": "2017-06-20",
       "Started": "2017-06-21",
