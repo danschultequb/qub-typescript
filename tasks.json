@@ -24,6 +24,11 @@
       "Started": "2017-06-21",
       "Completed": "2017-06-21"
     },
+    "Add LICENSE.txt file": {
+      "Conceived": "2017-06-20",
+      "Started": "2017-06-20",
+      "Completed": "2017-06-20"
+    },
     "Make SingleLinkNode<T> an Iterable<T>": {
       "Conceived": "2017-06-20",
       "Started": "2017-06-20",
