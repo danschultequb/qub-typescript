@@ -5,14 +5,16 @@
     "Add DoubleLinkList<T>": {
       "Conceived": "2017-06-20"
     },
-    "Add Array<T>": {
-      "Conceived": "2017-06-21"
-    },
     "Add FileSystem classes": {
       "Conceived": "2017-06-20"
     }
   },
   "CompletedTasks": {
+    "Release version 1.2.0": {
+      "Conceived": "2017-06-21",
+      "Started": "2017-06-21",
+      "Completed": "2017-06-21"
+    },
     "Replace ArrayListReverseIterator<T> with GenericIndexableReverseIterator<T>": {
       "Conceived": "2017-06-21",
       "Started": "2017-06-21",
