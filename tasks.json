@@ -1,6 +1,11 @@
 {
   "$schema": "./tasks.schema.json",
-  "ActiveTasks": {},
+  "ActiveTasks": {
+    "Release version 1.2.0": {
+      "Conceived": "2017-06-21",
+      "Started": "2017-06-21"
+    }
+  },
   "PlannedTasks": {
     "Add DoubleLinkList<T>": {
       "Conceived": "2017-06-20"

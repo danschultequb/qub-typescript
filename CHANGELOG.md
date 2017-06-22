@@ -1,3 +1,9 @@
+### 1.2.0 (2017-06-21)
+
+- Add data structures (ArrayList, SingleLinkList, SingleLinkNode, DoubleLinkNode)
+- Add interfaces (Indexable, List)
+- Simplify Iterator implementations
+
 ### 1.1.0 (2017-06-18)
 
 - Add Issues class and Error(), and Warning() functions
