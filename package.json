@@ -1,6 +1,6 @@
 {
   "name": "qub",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A collection of common data structures and functions",
   "main": "output/sources/Qub",
   "typings": "output/sources/Qub",

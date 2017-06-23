@@ -1,3 +1,7 @@
+### 1.2.1 (2017-06-23)
+
+- Add Indexable<T>.skip() -> Indexable<T> method.
+
 ### 1.2.0 (2017-06-21)
 
 - Add data structures (ArrayList, SingleLinkList, SingleLinkNode, DoubleLinkNode)
