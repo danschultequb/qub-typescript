@@ -1188,7 +1188,7 @@ suite("Qub", () => {
             assert.deepStrictEqual(iterator.hasStarted(), true);
             assert.deepStrictEqual(iterator.hasCurrent(), false);
             assert.deepStrictEqual(iterator.getCurrent(), undefined);
-            
+
             assert.deepStrictEqual(iterator.next(), false);
             assert.deepStrictEqual(iterator.hasStarted(), true);
             assert.deepStrictEqual(iterator.hasCurrent(), false);
@@ -1623,420 +1623,6 @@ suite("Qub", () => {
         });
     });
 
-    suite("Iterable<T>", () => {
-        suite("contains()", () => {
-            function containsTest(testName: string, values: number[], searchFor: number, expected: boolean): void {
-                test(testName, () => {
-                    const ci = new qub.ArrayList(values);
-                    assert.deepStrictEqual(ci.contains(searchFor), expected);
-                });
-            }
-
-            containsTest("with undefined values", undefined, 7, false);
-            containsTest("with null values", null, 7, false);
-            containsTest("with no values", [], 7, false);
-            containsTest("with searchFor value not in values", [1, 2, 3], 7, false);
-            containsTest("with searchFor value in values", [1, 7, 3], 7, true);
-
-            test("with searchFor value in in values with comparer", () => {
-                const ci = new qub.ArrayList([1, 2, 3]);
-                assert.deepStrictEqual(ci.contains(8, (lhs, rhs) => lhs % 2 === rhs % 2), true);
-            });
-        });
-
-        suite("where()", () => {
-            function whereTest(testName: string, originalValues: number[], condition: (value: number) => boolean, expectedValues: number[]): void {
-                test(testName, () => {
-                    const wi1: qub.Iterable<number> = new qub.ArrayList(originalValues).where(condition);
-                    assert.deepStrictEqual(wi1.toArray(), expectedValues);
-                });
-            }
-
-            whereTest("with undefined condition", [0, 1, 2], undefined, [0, 1, 2]);
-            whereTest("return odd numbers", [0, 1, 2, 3, 4, 5], (value: number) => value % 2 === 1, [1, 3, 5]);
-            whereTest("return numbers greater than 2", [0, 1, 2, 3, 4, 5], (value: number) => value > 2, [3, 4, 5]);
-
-            const whereIterable = new qub.ArrayList([0, 1, 2, 3, 4, 5, 6]).where((value: number) => value % 2 == 0);
-
-            suite("any()", () => {
-                function anyTest(testName: string, condition: (value: number) => boolean, expected: boolean): void {
-                    test(testName, () => {
-                        assert.deepStrictEqual(whereIterable.any(condition), expected);
-                    });
-                }
-
-                anyTest("with no condition", undefined, true);
-                anyTest("with condition with no matches", (value: number) => value > 10, false);
-                anyTest("with condition with matches", (value: number) => value > 1, true);
-            });
-
-            suite("first()", () => {
-                function firstTest(testName: string, condition: (value: number) => boolean, expected: number): void {
-                    test(testName, () => {
-                        assert.deepStrictEqual(whereIterable.first(condition), expected);
-                    });
-                }
-
-                firstTest("with no condition", undefined, 0);
-                firstTest("with condition with no matches", (value: number) => value > 10, undefined);
-                firstTest("with condition with matches", (value: number) => value > 1, 2);
-            });
-
-            test("getCount()", () => {
-                assert.deepStrictEqual(whereIterable.getCount(), 4);
-            });
-
-            suite("last()", () => {
-                function lastTest(testName: string, condition: (value: number) => boolean, expected: number): void {
-                    test(testName, () => {
-                        assert.deepStrictEqual(whereIterable.last(condition), expected);
-                    });
-                }
-
-                lastTest("with no condition", undefined, 6);
-                lastTest("with condition with no matches", (value: number) => value > 10, undefined);
-                lastTest("with condition with matches", (value: number) => value < 5, 4);
-            });
-
-            suite("where()", () => {
-                function whereTest(testName: string, condition: (value: number) => boolean, expected: number[]): void {
-                    test(testName, () => {
-                        assert.deepStrictEqual(whereIterable.where(condition).toArray(), expected);
-                    });
-                }
-
-                whereTest("with no condition", undefined, [0, 2, 4, 6]);
-                whereTest("with condition with no matches", (value: number) => value > 10, []);
-                whereTest("with condition with matches", (value: number) => value > 1, [2, 4, 6]);
-            });
-
-            suite("skip()", () => {
-                function skipTest(toSkip: number, expected: number[]): void {
-                    test(`with ${toSkip}`, () => {
-                        assert.deepStrictEqual(whereIterable.skip(toSkip).toArray(), expected);
-                    });
-                }
-
-                skipTest(undefined, [0, 2, 4, 6]);
-                skipTest(0, [0, 2, 4, 6]);
-                skipTest(1, [2, 4, 6]);
-                skipTest(4, []);
-                skipTest(10, []);
-            });
-
-            suite("take()", () => {
-                function takeTest(toTake: number, expected: number[]): void {
-                    test(`with ${toTake}`, () => {
-                        assert.deepStrictEqual(whereIterable.take(toTake).toArray(), expected);
-                    });
-                }
-
-                takeTest(undefined, []);
-                takeTest(0, []);
-                takeTest(1, [0]);
-                takeTest(4, [0, 2, 4, 6]);
-                takeTest(10, [0, 2, 4, 6]);
-            });
-
-            suite("map()", () => {
-                function mapTest(testName: string, mapFunction: (value: number) => string, expected: string[]): void {
-                    test(testName, () => {
-                        assert.deepStrictEqual(whereIterable.map(mapFunction).toArray(), expected);
-                    });
-                }
-
-                mapTest("with undefined mapFunction", undefined, []);
-                mapTest("with toString() mapFunction", (value: number) => value.toString(), ["0", "2", "4", "6"]);
-                mapTest("with *2 and toString() mapFunction", (value: number) => (value * 2).toString(), ["0", "4", "8", "12"]);
-            });
-        });
-
-        suite("skip()", () => {
-            function skipTest(testName: string, originalValues: number[], toSkip: number, expectedValues: number[]): void {
-                test(testName, () => {
-                    const si: qub.Iterable<number> = new qub.ArrayList(originalValues).skip(toSkip);
-                    assert.deepStrictEqual(si.toArray(), expectedValues, "Wrong toArray() with unstarted skip iterator.");
-                });
-            }
-
-            skipTest("with undefined toSkip", [0, 1, 2, 3, 4], undefined, [0, 1, 2, 3, 4]);
-            skipTest("with 0 toSkip", [0, 1, 2, 3, 4], 0, [0, 1, 2, 3, 4]);
-            skipTest("with 1 toSkip", [0, 1, 2, 3, 4], 1, [1, 2, 3, 4]);
-            skipTest("with 4 toSkip", [0, 1, 2, 3, 4], 4, [4]);
-            skipTest("with 5 toSkip", [0, 1, 2, 3, 4], 5, []);
-            skipTest("with 200", [0, 1, 2, 3, 4], 200, []);
-
-            const iterable = new qub.ArrayList([0, 1, 2, 3, 4]);
-            suite("getCount()", () => {
-                function getCountTest(toSkip: number, expectedCount: number): void {
-                    test(`with ${toSkip} toSkip`, () => {
-                        assert.deepStrictEqual(iterable.skip(toSkip).getCount(), expectedCount);
-                    });
-                }
-
-                getCountTest(undefined, 5);
-                getCountTest(-1, 5);
-                getCountTest(0, 5);
-                getCountTest(1, 4);
-                getCountTest(3, 2);
-                getCountTest(5, 0);
-                getCountTest(17, 0);
-            });
-        });
-
-        suite("skipLast()", () => {
-            function skipLastTest(testName: string, originalValues: number[], toSkip: number, expectedValues: number[]): void {
-                test(testName, () => {
-                    const si: qub.Iterable<number> = new qub.ArrayList(originalValues).skipLast(toSkip);
-                    assert.deepStrictEqual(si.toArray(), expectedValues, "Wrong toArray() with unstarted skip iterator.");
-                });
-            }
-
-            skipLastTest("with undefined toSkip", [0, 1, 2, 3, 4], undefined, [0, 1, 2, 3, 4]);
-            skipLastTest("with 0 toSkip", [0, 1, 2, 3, 4], 0, [0, 1, 2, 3, 4]);
-            skipLastTest("with 1 toSkip", [0, 1, 2, 3, 4], 1, [0, 1, 2, 3]);
-            skipLastTest("with 4 toSkip", [0, 1, 2, 3, 4], 4, [0]);
-            skipLastTest("with 5 toSkip", [0, 1, 2, 3, 4], 5, []);
-            skipLastTest("with 200", [0, 1, 2, 3, 4], 200, []);
-
-            const iterable = new qub.ArrayList([0, 1, 2, 3, 4]);
-            suite("getCount()", () => {
-                function getCountTest(toSkip: number, expectedCount: number): void {
-                    test(`with ${toSkip} toSkip`, () => {
-                        assert.deepStrictEqual(iterable.skipLast(toSkip).getCount(), expectedCount);
-                    });
-                }
-
-                getCountTest(undefined, 5);
-                getCountTest(-1, 5);
-                getCountTest(0, 5);
-                getCountTest(1, 4);
-                getCountTest(3, 2);
-                getCountTest(5, 0);
-                getCountTest(17, 0);
-            });
-        });
-
-        suite("take()", () => {
-            function takeTest(testName: string, originalValues: number[], toTake: number, expectedValues: number[]): void {
-                test(testName, () => {
-                    const ti: qub.Iterable<number> = new qub.ArrayList(originalValues).take(toTake);
-                    assert.deepStrictEqual(ti.toArray(), expectedValues, "Wrong toArray() with non-started take iterator.");
-                });
-            }
-
-            takeTest("with undefined toTake", [0, 1, 2, 3, 4], undefined, []);
-            takeTest("with 0 toTake", [0, 1, 2, 3, 4], 0, []);
-            takeTest("with 1 toTake", [0, 1, 2, 3, 4], 1, [0]);
-            takeTest("with 4 toTake", [0, 1, 2, 3, 4], 4, [0, 1, 2, 3]);
-            takeTest("with 10 toTake", [0, 1, 2, 3, 4], 10, [0, 1, 2, 3, 4]);
-
-            const iterable = new qub.ArrayList([0, 1, 2, 3, 4]);
-            suite("getCount()", () => {
-                function getCountTest(toTake: number, expectedCount: number): void {
-                    test(`with ${toTake} toTake`, () => {
-                        assert.deepStrictEqual(iterable.take(toTake).getCount(), expectedCount);
-                    });
-                }
-
-                getCountTest(undefined, 0);
-                getCountTest(-1, 0);
-                getCountTest(0, 0);
-                getCountTest(1, 1);
-                getCountTest(3, 3);
-                getCountTest(5, 5);
-                getCountTest(17, 5);
-            });
-        });
-
-        suite("takeLast()", () => {
-            function takeLastTest(originalValues: number[], toTake: number, expectedValues: number[]): void {
-                test(`with ${JSON.stringify(originalValues)} and ${toTake} toTake`, () => {
-                    assert.deepStrictEqual(new qub.ArrayList(originalValues).takeLast(toTake).toArray(), expectedValues);
-                });
-            }
-
-            takeLastTest([], -1, []);
-            takeLastTest([0, 1, 2, 3], -1, []);
-            takeLastTest([0, 1, 2, 3], 0, []);
-            takeLastTest([0, 1, 2, 3], 1, [3]);
-            takeLastTest([0, 1, 2, 3], 2, [2, 3]);
-            takeLastTest([0, 1, 2, 3], 3, [1, 2, 3]);
-            takeLastTest([0, 1, 2, 3], 4, [0, 1, 2, 3]);
-            takeLastTest([0, 1, 2, 3], 5, [0, 1, 2, 3]);
-        });
-
-        suite("map()", () => {
-            function mapTest(testName: string, originalValues: number[], mapFunction: (value: number) => string, expectedValues: string[]): void {
-                test(testName, () => {
-                    assert.deepStrictEqual(new qub.ArrayList(originalValues).map(mapFunction).toArray(), expectedValues, "Wrong toArray() with non-started map iterable.");
-                });
-            }
-
-            mapTest("with undefined mapFunction", [0, 1, 2, 3, 4], undefined, []);
-            mapTest("with toString() mapFunction", [0, 1, 2, 3, 4], (value: number) => value.toString(), ["0", "1", "2", "3", "4"]);
-            mapTest("with *2 and toString() mapFunction", [0, 1, 2, 3, 4], (value: number) => (value * 2).toString(), ["0", "2", "4", "6", "8"]);
-
-            const mapIterable = new qub.ArrayList([0, 1, 2, 3]).map((value: number) => value.toString());;
-            test("any()", () => {
-                assert.deepStrictEqual(mapIterable.any(), true);
-                assert.deepStrictEqual(mapIterable.any((value: string) => value === "1"), true);
-                assert.deepStrictEqual(mapIterable.any((value: string) => value === "-1"), false);
-            });
-
-            test("getCount()", () => {
-                assert.deepStrictEqual(mapIterable.getCount(), 4);
-            });
-
-            suite("contains()", () => {
-                function containsTest(testName: string, values: number[], searchFor: string, expected: boolean): void {
-                    test(testName, () => {
-                        const mi = new qub.ArrayList(values).map((value) => value.toString());
-                        assert.deepStrictEqual(mi.contains(searchFor), expected);
-                    });
-                }
-
-                containsTest("with undefined values", undefined, "7", false);
-                containsTest("with null values", null, "7", false);
-                containsTest("with no values", [], "7", false);
-                containsTest("with searchFor value not in values", [1, 2, 3], "7", false);
-                containsTest("with searchFor value in values", [1, 7, 3], "7", true);
-
-                test("with searchFor value in in values with comparer", () => {
-                    const ci = new qub.ArrayList([1, 2, 3]).map((value) => value.toString());
-                    assert.deepStrictEqual(ci.contains("200", (iterableValue, value) => value.substring(0, 1) === iterableValue), true);
-                });
-            });
-
-            test("first()", () => {
-                assert.deepStrictEqual(mapIterable.first(), "0");
-            });
-
-            test("last()", () => {
-                assert.deepStrictEqual(mapIterable.last(), "3");
-            });
-
-            test("where()", () => {
-                assert.deepStrictEqual(mapIterable.where(undefined).toArray(), mapIterable.toArray());
-                assert.deepStrictEqual(mapIterable.where((value: string) => value === "2").toArray(), ["2"]);
-            });
-
-            test("skip()", () => {
-                assert.deepStrictEqual(mapIterable.skip(undefined).toArray(), mapIterable.toArray());
-                assert.deepStrictEqual(mapIterable.skip(-1).toArray(), mapIterable.toArray());
-                assert.deepStrictEqual(mapIterable.skip(2).toArray(), ["2", "3"]);
-                assert.deepStrictEqual(mapIterable.skip(10).toArray(), []);
-            });
-
-            test("skipLast()", () => {
-                assert.deepStrictEqual(mapIterable.skipLast(undefined).toArray(), mapIterable.toArray());
-                assert.deepStrictEqual(mapIterable.skipLast(-1).toArray(), mapIterable.toArray());
-                assert.deepStrictEqual(mapIterable.skipLast(2).toArray(), ["0", "1"]);
-                assert.deepStrictEqual(mapIterable.skipLast(10).toArray(), []);
-            });
-
-            test("take()", () => {
-                assert.deepStrictEqual(mapIterable.take(undefined).toArray(), [], "Wrong result when undefined taken.");
-                assert.deepStrictEqual(mapIterable.take(-1).toArray(), [], "Wrong result when -1 taken.");
-                assert.deepStrictEqual(mapIterable.take(3).toArray(), ["0", "1", "2"], "Wrong result when 3 taken.");
-                assert.deepStrictEqual(mapIterable.take(200).toArray(), mapIterable.toArray(), "Wrong result when 200 taken.");
-            });
-
-            test("takeLast()", () => {
-                assert.deepStrictEqual(mapIterable.takeLast(undefined).toArray(), [], "Wrong result when last undefined taken.");
-                assert.deepStrictEqual(mapIterable.takeLast(-1).toArray(), [], "Wrong result when last -1 taken.");
-                assert.deepStrictEqual(mapIterable.takeLast(3).toArray(), ["1", "2", "3"], "Wrong result when last 3 taken.");
-                assert.deepStrictEqual(mapIterable.takeLast(200).toArray(), mapIterable.toArray(), "Wrong result when last 200 taken.");
-            });
-
-            test("map()", () => {
-                assert.deepStrictEqual(mapIterable.map(undefined).toArray(), []);
-                assert.deepStrictEqual(mapIterable.map((value: string) => value + value).toArray(), ["00", "11", "22", "33"]);
-            });
-
-            test("concatenate()", () => {
-                assert.deepStrictEqual(mapIterable.concatenate(undefined).toArray(), ["0", "1", "2", "3"]);
-                assert.deepStrictEqual(mapIterable.concatenate(null).toArray(), ["0", "1", "2", "3"]);
-                assert.deepStrictEqual(mapIterable.concatenate([]).toArray(), ["0", "1", "2", "3"]);
-                assert.deepStrictEqual(mapIterable.concatenate(["4", "5"]).toArray(), ["0", "1", "2", "3", "4", "5"]);
-            });
-
-            suite("endsWith()", () => {
-                function endsWithTest(values: number[], endingValues: string[], expected: boolean): void {
-                    test(`with ${JSON.stringify(values)} and ${JSON.stringify(endingValues)}`, () => {
-                        const mapValues: qub.Iterable<string> = new qub.ArrayList(values).map((value: number) => value.toString());
-                        const mapEndingValues: qub.Iterable<string> = endingValues ? new qub.ArrayList(endingValues) : undefined;
-                        assert.deepStrictEqual(mapValues.endsWith(mapEndingValues), expected);
-                    });
-                }
-
-                endsWithTest([], undefined, false);
-                endsWithTest([1], undefined, false);
-                endsWithTest([], [], false);
-                endsWithTest([], ["1"], false);
-                endsWithTest([1], [], false);
-                endsWithTest([1], ["1"], true);
-                endsWithTest([1], ["1", "2"], false);
-                endsWithTest([1, 2, 3], ["3"], true);
-                endsWithTest([1, 2, 3], ["2", "3"], true);
-                endsWithTest([1, 2, 3], ["4", "3"], false);
-                endsWithTest([1, 2, 3], ["2", "4"], false);
-            });
-
-            test("for..of", () => {
-                const values: string[] = [];
-                for (const value of mapIterable) {
-                    values.push(value);
-                }
-                assert.deepStrictEqual(values, ["0", "1", "2", "3"]);
-            });
-        });
-
-        suite("concatenate()", () => {
-            function concatenateTest(originalValues: number[], toConcatenate: number[], expectedValues: number[]): void {
-                test(`with ${JSON.stringify(originalValues)} and ${JSON.stringify(toConcatenate)}`, () => {
-                    const originalIterable = new qub.ArrayList<number>(originalValues);
-                    const concatenateIterable: qub.Iterable<number> = toConcatenate ? new qub.ArrayList<number>(toConcatenate) : undefined;
-                    assert.deepStrictEqual(originalIterable.concatenate(concatenateIterable).toArray(), expectedValues);
-                });
-            }
-
-            concatenateTest([], undefined, []);
-            concatenateTest([], [], []);
-            concatenateTest([0, 1, 2, 3], [], [0, 1, 2, 3]);
-            concatenateTest([0, 1, 2, 3], [4], [0, 1, 2, 3, 4]);
-            concatenateTest([0, 1, 2, 3], [4, 5], [0, 1, 2, 3, 4, 5]);
-            concatenateTest([0, 1, 2, 3], [4, 5, 6], [0, 1, 2, 3, 4, 5, 6]);
-            concatenateTest([], [0, 1, 2, 3], [0, 1, 2, 3]);
-        });
-
-        suite("endsWith()", () => {
-            function endsWithTest(values: number[], endingValues: number[], expected: boolean): void {
-                test(`with ${JSON.stringify(values)} and ${JSON.stringify(endingValues)}`, () => {
-                    assert.deepStrictEqual(new qub.ArrayList(values).endsWith(new qub.ArrayList(endingValues)), expected);
-                });
-            }
-
-            test(`with [] and undefined`, () => {
-                assert.deepStrictEqual(new qub.ArrayList([]).endsWith(undefined), false);
-            });
-
-            test(`with [1] and undefined`, () => {
-                assert.deepStrictEqual(new qub.ArrayList([1]).endsWith(undefined), false);
-            });
-
-            endsWithTest([], [], false);
-            endsWithTest([], [1], false);
-            endsWithTest([1], [], false);
-            endsWithTest([1], [1], true);
-            endsWithTest([1], [1, 2], false);
-            endsWithTest([1, 2, 3], [3], true);
-            endsWithTest([1, 2, 3], [2, 3], true);
-            endsWithTest([1, 2, 3], [4, 3], false);
-            endsWithTest([1, 2, 3], [2, 4], false);
-        });
-    });
-
     suite("Iterator<T>", () => {
         suite("any()", () => {
             function anyTest(testName: string, originalValues: number[], condition: (value: number) => boolean, expected: boolean): void {
@@ -2367,6 +1953,453 @@ suite("Qub", () => {
                 assert.deepStrictEqual(iterator.hasStarted(), true);
                 assert.deepStrictEqual(iterator.hasCurrent(), false);
             });
+        });
+    });
+
+    suite("Iterable<T>", () => {
+        suite("contains()", () => {
+            function containsTest(testName: string, values: number[], searchFor: number, expected: boolean): void {
+                test(testName, () => {
+                    const ci = new qub.ArrayList(values);
+                    assert.deepStrictEqual(ci.contains(searchFor), expected);
+                });
+            }
+
+            containsTest("with undefined values", undefined, 7, false);
+            containsTest("with null values", null, 7, false);
+            containsTest("with no values", [], 7, false);
+            containsTest("with searchFor value not in values", [1, 2, 3], 7, false);
+            containsTest("with searchFor value in values", [1, 7, 3], 7, true);
+
+            test("with searchFor value in in values with comparer", () => {
+                const ci = new qub.ArrayList([1, 2, 3]);
+                assert.deepStrictEqual(ci.contains(8, (lhs, rhs) => lhs % 2 === rhs % 2), true);
+            });
+        });
+
+        suite("where()", () => {
+            function whereTest(testName: string, originalValues: number[], condition: (value: number) => boolean, expectedValues: number[]): void {
+                test(testName, () => {
+                    const wi1: qub.Iterable<number> = new qub.ArrayList(originalValues).where(condition);
+                    assert.deepStrictEqual(wi1.toArray(), expectedValues);
+                });
+            }
+
+            whereTest("with undefined condition", [0, 1, 2], undefined, [0, 1, 2]);
+            whereTest("return odd numbers", [0, 1, 2, 3, 4, 5], (value: number) => value % 2 === 1, [1, 3, 5]);
+            whereTest("return numbers greater than 2", [0, 1, 2, 3, 4, 5], (value: number) => value > 2, [3, 4, 5]);
+
+            const whereIterable = new qub.ArrayList([0, 1, 2, 3, 4, 5, 6]).where((value: number) => value % 2 == 0);
+
+            suite("any()", () => {
+                function anyTest(testName: string, condition: (value: number) => boolean, expected: boolean): void {
+                    test(testName, () => {
+                        assert.deepStrictEqual(whereIterable.any(condition), expected);
+                    });
+                }
+
+                anyTest("with no condition", undefined, true);
+                anyTest("with condition with no matches", (value: number) => value > 10, false);
+                anyTest("with condition with matches", (value: number) => value > 1, true);
+            });
+
+            suite("first()", () => {
+                function firstTest(testName: string, condition: (value: number) => boolean, expected: number): void {
+                    test(testName, () => {
+                        assert.deepStrictEqual(whereIterable.first(condition), expected);
+                    });
+                }
+
+                firstTest("with no condition", undefined, 0);
+                firstTest("with condition with no matches", (value: number) => value > 10, undefined);
+                firstTest("with condition with matches", (value: number) => value > 1, 2);
+            });
+
+            test("getCount()", () => {
+                assert.deepStrictEqual(whereIterable.getCount(), 4);
+            });
+
+            suite("last()", () => {
+                function lastTest(testName: string, condition: (value: number) => boolean, expected: number): void {
+                    test(testName, () => {
+                        assert.deepStrictEqual(whereIterable.last(condition), expected);
+                    });
+                }
+
+                lastTest("with no condition", undefined, 6);
+                lastTest("with condition with no matches", (value: number) => value > 10, undefined);
+                lastTest("with condition with matches", (value: number) => value < 5, 4);
+            });
+
+            suite("where()", () => {
+                function whereTest(testName: string, condition: (value: number) => boolean, expected: number[]): void {
+                    test(testName, () => {
+                        assert.deepStrictEqual(whereIterable.where(condition).toArray(), expected);
+                    });
+                }
+
+                whereTest("with no condition", undefined, [0, 2, 4, 6]);
+                whereTest("with condition with no matches", (value: number) => value > 10, []);
+                whereTest("with condition with matches", (value: number) => value > 1, [2, 4, 6]);
+            });
+
+            suite("skip()", () => {
+                function skipTest(toSkip: number, expected: number[]): void {
+                    test(`with ${toSkip}`, () => {
+                        assert.deepStrictEqual(whereIterable.skip(toSkip).toArray(), expected);
+                    });
+                }
+
+                skipTest(undefined, [0, 2, 4, 6]);
+                skipTest(0, [0, 2, 4, 6]);
+                skipTest(1, [2, 4, 6]);
+                skipTest(4, []);
+                skipTest(10, []);
+            });
+
+            suite("take()", () => {
+                function takeTest(toTake: number, expected: number[]): void {
+                    test(`with ${toTake}`, () => {
+                        assert.deepStrictEqual(whereIterable.take(toTake).toArray(), expected);
+                    });
+                }
+
+                takeTest(undefined, []);
+                takeTest(0, []);
+                takeTest(1, [0]);
+                takeTest(4, [0, 2, 4, 6]);
+                takeTest(10, [0, 2, 4, 6]);
+            });
+
+            suite("map()", () => {
+                function mapTest(testName: string, mapFunction: (value: number) => string, expected: string[]): void {
+                    test(testName, () => {
+                        assert.deepStrictEqual(whereIterable.map(mapFunction).toArray(), expected);
+                    });
+                }
+
+                mapTest("with undefined mapFunction", undefined, []);
+                mapTest("with toString() mapFunction", (value: number) => value.toString(), ["0", "2", "4", "6"]);
+                mapTest("with *2 and toString() mapFunction", (value: number) => (value * 2).toString(), ["0", "4", "8", "12"]);
+            });
+        });
+
+        suite("skip()", () => {
+            function skipTest(testName: string, originalValues: number[], toSkip: number, expectedValues: number[]): void {
+                test(testName, () => {
+                    const si: qub.Iterable<number> = new qub.ArrayList<number>(originalValues)
+                        // We have to do map() first to ensure that skip() will return a
+                        // SkipIterable<T>.
+                        .map((value: number) => value)
+                        .skip(toSkip);
+                    assert.deepStrictEqual(si.toArray(), expectedValues, "Wrong toArray().");
+                    assert.deepStrictEqual(si.getCount(), qub.getLength(expectedValues), "Wrong getCount().")
+                });
+            }
+
+            skipTest("with undefined toSkip", [0, 1, 2, 3, 4], undefined, [0, 1, 2, 3, 4]);
+            skipTest("with 0 toSkip", [0, 1, 2, 3, 4], 0, [0, 1, 2, 3, 4]);
+            skipTest("with 1 toSkip", [0, 1, 2, 3, 4], 1, [1, 2, 3, 4]);
+            skipTest("with 4 toSkip", [0, 1, 2, 3, 4], 4, [4]);
+            skipTest("with 5 toSkip", [0, 1, 2, 3, 4], 5, []);
+            skipTest("with 200", [0, 1, 2, 3, 4], 200, []);
+
+            const iterable = new qub.ArrayList([0, 1, 2, 3, 4]);
+            suite("getCount()", () => {
+                function getCountTest(toSkip: number, expectedCount: number): void {
+                    test(`with ${toSkip} toSkip`, () => {
+                        assert.deepStrictEqual(iterable.skip(toSkip).getCount(), expectedCount);
+                    });
+                }
+
+                getCountTest(undefined, 5);
+                getCountTest(-1, 5);
+                getCountTest(0, 5);
+                getCountTest(1, 4);
+                getCountTest(3, 2);
+                getCountTest(5, 0);
+                getCountTest(17, 0);
+            });
+        });
+
+        suite("skipLast()", () => {
+            function skipLastTest(testName: string, originalValues: number[], toSkip: number, expectedValues: number[]): void {
+                test(testName, () => {
+                    const si: qub.Iterable<number> = new qub.ArrayList(originalValues).skipLast(toSkip);
+                    assert.deepStrictEqual(si.toArray(), expectedValues, "Wrong toArray() with unstarted skip iterator.");
+                });
+            }
+
+            skipLastTest("with undefined toSkip", [0, 1, 2, 3, 4], undefined, [0, 1, 2, 3, 4]);
+            skipLastTest("with 0 toSkip", [0, 1, 2, 3, 4], 0, [0, 1, 2, 3, 4]);
+            skipLastTest("with 1 toSkip", [0, 1, 2, 3, 4], 1, [0, 1, 2, 3]);
+            skipLastTest("with 4 toSkip", [0, 1, 2, 3, 4], 4, [0]);
+            skipLastTest("with 5 toSkip", [0, 1, 2, 3, 4], 5, []);
+            skipLastTest("with 200", [0, 1, 2, 3, 4], 200, []);
+
+            const iterable = new qub.ArrayList([0, 1, 2, 3, 4]);
+            suite("getCount()", () => {
+                function getCountTest(toSkip: number, expectedCount: number): void {
+                    test(`with ${toSkip} toSkip`, () => {
+                        assert.deepStrictEqual(iterable.skipLast(toSkip).getCount(), expectedCount);
+                    });
+                }
+
+                getCountTest(undefined, 5);
+                getCountTest(-1, 5);
+                getCountTest(0, 5);
+                getCountTest(1, 4);
+                getCountTest(3, 2);
+                getCountTest(5, 0);
+                getCountTest(17, 0);
+            });
+        });
+
+        suite("take()", () => {
+            function takeTest(testName: string, originalValues: number[], toTake: number, expectedValues: number[]): void {
+                test(testName, () => {
+                    const ti: qub.Iterable<number> = new qub.ArrayList(originalValues).take(toTake);
+                    assert.deepStrictEqual(ti.toArray(), expectedValues, "Wrong toArray() with non-started take iterator.");
+                });
+            }
+
+            takeTest("with undefined toTake", [0, 1, 2, 3, 4], undefined, []);
+            takeTest("with 0 toTake", [0, 1, 2, 3, 4], 0, []);
+            takeTest("with 1 toTake", [0, 1, 2, 3, 4], 1, [0]);
+            takeTest("with 4 toTake", [0, 1, 2, 3, 4], 4, [0, 1, 2, 3]);
+            takeTest("with 10 toTake", [0, 1, 2, 3, 4], 10, [0, 1, 2, 3, 4]);
+
+            const iterable = new qub.ArrayList([0, 1, 2, 3, 4]);
+            suite("getCount()", () => {
+                function getCountTest(toTake: number, expectedCount: number): void {
+                    test(`with ${toTake} toTake`, () => {
+                        assert.deepStrictEqual(iterable.take(toTake).getCount(), expectedCount);
+                    });
+                }
+
+                getCountTest(undefined, 0);
+                getCountTest(-1, 0);
+                getCountTest(0, 0);
+                getCountTest(1, 1);
+                getCountTest(3, 3);
+                getCountTest(5, 5);
+                getCountTest(17, 5);
+            });
+        });
+
+        suite("takeLast()", () => {
+            function takeLastTest(originalValues: number[], toTake: number, expectedValues: number[]): void {
+                test(`with ${JSON.stringify(originalValues)} and ${toTake} toTake`, () => {
+                    assert.deepStrictEqual(new qub.ArrayList(originalValues).takeLast(toTake).toArray(), expectedValues);
+                });
+            }
+
+            takeLastTest([], -1, []);
+            takeLastTest([0, 1, 2, 3], -1, []);
+            takeLastTest([0, 1, 2, 3], 0, []);
+            takeLastTest([0, 1, 2, 3], 1, [3]);
+            takeLastTest([0, 1, 2, 3], 2, [2, 3]);
+            takeLastTest([0, 1, 2, 3], 3, [1, 2, 3]);
+            takeLastTest([0, 1, 2, 3], 4, [0, 1, 2, 3]);
+            takeLastTest([0, 1, 2, 3], 5, [0, 1, 2, 3]);
+        });
+
+        suite("map()", () => {
+            function mapTest(testName: string, originalValues: number[], mapFunction: (value: number) => string, expectedValues: string[]): void {
+                test(testName, () => {
+                    assert.deepStrictEqual(new qub.ArrayList(originalValues).map(mapFunction).toArray(), expectedValues, "Wrong toArray() with non-started map iterable.");
+                });
+            }
+
+            mapTest("with undefined mapFunction", [0, 1, 2, 3, 4], undefined, []);
+            mapTest("with toString() mapFunction", [0, 1, 2, 3, 4], (value: number) => value.toString(), ["0", "1", "2", "3", "4"]);
+            mapTest("with *2 and toString() mapFunction", [0, 1, 2, 3, 4], (value: number) => (value * 2).toString(), ["0", "2", "4", "6", "8"]);
+
+            const mapIterable = new qub.ArrayList([0, 1, 2, 3]).map((value: number) => value.toString());;
+            test("any()", () => {
+                assert.deepStrictEqual(mapIterable.any(), true);
+                assert.deepStrictEqual(mapIterable.any((value: string) => value === "1"), true);
+                assert.deepStrictEqual(mapIterable.any((value: string) => value === "-1"), false);
+            });
+
+            test("getCount()", () => {
+                assert.deepStrictEqual(mapIterable.getCount(), 4);
+            });
+
+            suite("contains()", () => {
+                function containsTest(testName: string, values: number[], searchFor: string, expected: boolean): void {
+                    test(testName, () => {
+                        const mi = new qub.ArrayList(values).map((value) => value.toString());
+                        assert.deepStrictEqual(mi.contains(searchFor), expected);
+                    });
+                }
+
+                containsTest("with undefined values", undefined, "7", false);
+                containsTest("with null values", null, "7", false);
+                containsTest("with no values", [], "7", false);
+                containsTest("with searchFor value not in values", [1, 2, 3], "7", false);
+                containsTest("with searchFor value in values", [1, 7, 3], "7", true);
+
+                test("with searchFor value in in values with comparer", () => {
+                    const ci = new qub.ArrayList([1, 2, 3]).map((value) => value.toString());
+                    assert.deepStrictEqual(ci.contains("200", (iterableValue, value) => value.substring(0, 1) === iterableValue), true);
+                });
+            });
+
+            test("first()", () => {
+                assert.deepStrictEqual(mapIterable.first(), "0");
+            });
+
+            test("last()", () => {
+                assert.deepStrictEqual(mapIterable.last(), "3");
+            });
+
+            test("where()", () => {
+                assert.deepStrictEqual(mapIterable.where(undefined).toArray(), mapIterable.toArray());
+                assert.deepStrictEqual(mapIterable.where((value: string) => value === "2").toArray(), ["2"]);
+            });
+
+            test("skip()", () => {
+                assert.deepStrictEqual(mapIterable.skip(undefined).toArray(), mapIterable.toArray());
+                assert.deepStrictEqual(mapIterable.skip(-1).toArray(), mapIterable.toArray());
+                assert.deepStrictEqual(mapIterable.skip(2).toArray(), ["2", "3"]);
+                assert.deepStrictEqual(mapIterable.skip(10).toArray(), []);
+            });
+
+            test("skipLast()", () => {
+                assert.deepStrictEqual(mapIterable.skipLast(undefined).toArray(), mapIterable.toArray());
+                assert.deepStrictEqual(mapIterable.skipLast(-1).toArray(), mapIterable.toArray());
+                assert.deepStrictEqual(mapIterable.skipLast(2).toArray(), ["0", "1"]);
+                assert.deepStrictEqual(mapIterable.skipLast(10).toArray(), []);
+            });
+
+            test("take()", () => {
+                assert.deepStrictEqual(mapIterable.take(undefined).toArray(), [], "Wrong result when undefined taken.");
+                assert.deepStrictEqual(mapIterable.take(-1).toArray(), [], "Wrong result when -1 taken.");
+                assert.deepStrictEqual(mapIterable.take(3).toArray(), ["0", "1", "2"], "Wrong result when 3 taken.");
+                assert.deepStrictEqual(mapIterable.take(200).toArray(), mapIterable.toArray(), "Wrong result when 200 taken.");
+            });
+
+            test("takeLast()", () => {
+                assert.deepStrictEqual(mapIterable.takeLast(undefined).toArray(), [], "Wrong result when last undefined taken.");
+                assert.deepStrictEqual(mapIterable.takeLast(-1).toArray(), [], "Wrong result when last -1 taken.");
+                assert.deepStrictEqual(mapIterable.takeLast(3).toArray(), ["1", "2", "3"], "Wrong result when last 3 taken.");
+                assert.deepStrictEqual(mapIterable.takeLast(200).toArray(), mapIterable.toArray(), "Wrong result when last 200 taken.");
+            });
+
+            test("map()", () => {
+                assert.deepStrictEqual(mapIterable.map(undefined).toArray(), []);
+                assert.deepStrictEqual(mapIterable.map((value: string) => value + value).toArray(), ["00", "11", "22", "33"]);
+            });
+
+            test("concatenate()", () => {
+                assert.deepStrictEqual(mapIterable.concatenate(undefined).toArray(), ["0", "1", "2", "3"]);
+                assert.deepStrictEqual(mapIterable.concatenate(null).toArray(), ["0", "1", "2", "3"]);
+                assert.deepStrictEqual(mapIterable.concatenate([]).toArray(), ["0", "1", "2", "3"]);
+                assert.deepStrictEqual(mapIterable.concatenate(["4", "5"]).toArray(), ["0", "1", "2", "3", "4", "5"]);
+            });
+
+            suite("endsWith()", () => {
+                function endsWithTest(values: number[], endingValues: string[], expected: boolean): void {
+                    test(`with ${JSON.stringify(values)} and ${JSON.stringify(endingValues)}`, () => {
+                        const mapValues: qub.Iterable<string> = new qub.ArrayList(values).map((value: number) => value.toString());
+                        const mapEndingValues: qub.Iterable<string> = endingValues ? new qub.ArrayList(endingValues) : undefined;
+                        assert.deepStrictEqual(mapValues.endsWith(mapEndingValues), expected);
+                    });
+                }
+
+                endsWithTest([], undefined, false);
+                endsWithTest([1], undefined, false);
+                endsWithTest([], [], false);
+                endsWithTest([], ["1"], false);
+                endsWithTest([1], [], false);
+                endsWithTest([1], ["1"], true);
+                endsWithTest([1], ["1", "2"], false);
+                endsWithTest([1, 2, 3], ["3"], true);
+                endsWithTest([1, 2, 3], ["2", "3"], true);
+                endsWithTest([1, 2, 3], ["4", "3"], false);
+                endsWithTest([1, 2, 3], ["2", "4"], false);
+            });
+
+            test("for..of", () => {
+                const values: string[] = [];
+                for (const value of mapIterable) {
+                    values.push(value);
+                }
+                assert.deepStrictEqual(values, ["0", "1", "2", "3"]);
+            });
+        });
+
+        suite("concatenate()", () => {
+            function concatenateTest(originalValues: number[], toConcatenate: number[], expectedValues: number[]): void {
+                test(`with ${JSON.stringify(originalValues)} and ${JSON.stringify(toConcatenate)}`, () => {
+                    const originalIterable = new qub.ArrayList<number>(originalValues);
+                    const concatenateIterable: qub.Iterable<number> = toConcatenate ? new qub.ArrayList<number>(toConcatenate) : undefined;
+                    assert.deepStrictEqual(originalIterable.concatenate(concatenateIterable).toArray(), expectedValues);
+                });
+            }
+
+            concatenateTest([], undefined, []);
+            concatenateTest([], [], []);
+            concatenateTest([0, 1, 2, 3], [], [0, 1, 2, 3]);
+            concatenateTest([0, 1, 2, 3], [4], [0, 1, 2, 3, 4]);
+            concatenateTest([0, 1, 2, 3], [4, 5], [0, 1, 2, 3, 4, 5]);
+            concatenateTest([0, 1, 2, 3], [4, 5, 6], [0, 1, 2, 3, 4, 5, 6]);
+            concatenateTest([], [0, 1, 2, 3], [0, 1, 2, 3]);
+        });
+
+        suite("endsWith()", () => {
+            function endsWithTest(values: number[], endingValues: number[], expected: boolean): void {
+                test(`with ${JSON.stringify(values)} and ${JSON.stringify(endingValues)}`, () => {
+                    assert.deepStrictEqual(new qub.ArrayList(values).endsWith(new qub.ArrayList(endingValues)), expected);
+                });
+            }
+
+            test(`with [] and undefined`, () => {
+                assert.deepStrictEqual(new qub.ArrayList([]).endsWith(undefined), false);
+            });
+
+            test(`with [1] and undefined`, () => {
+                assert.deepStrictEqual(new qub.ArrayList([1]).endsWith(undefined), false);
+            });
+
+            endsWithTest([], [], false);
+            endsWithTest([], [1], false);
+            endsWithTest([1], [], false);
+            endsWithTest([1], [1], true);
+            endsWithTest([1], [1, 2], false);
+            endsWithTest([1, 2, 3], [3], true);
+            endsWithTest([1, 2, 3], [2, 3], true);
+            endsWithTest([1, 2, 3], [4, 3], false);
+            endsWithTest([1, 2, 3], [2, 4], false);
+        });
+    });
+
+    suite("Indexable<T>", () => {
+        suite("skip()", () => {
+            function skipTest(originalValues: number[], toSkip: number, expectedValues: number[]): void {
+                test(`with ${JSON.stringify(originalValues)} and ${toSkip}`, () => {
+                    const si: qub.Indexable<number> = new qub.ArrayList<number>(originalValues).skip(toSkip);
+                    assert.deepStrictEqual(si.iterate().toArray(), expectedValues, "Wrong values.");
+
+                    assert.deepStrictEqual(si.iterateReverse().toArray(), expectedValues.reverse(), "Wrong reverse values.");
+                    // Reverse changes the original array, so we have to reset it with another call.
+                    expectedValues.reverse();
+
+                    for (let i = -1; i <= expectedValues.length + 1; ++i) {
+                        const expectedValue: number = (0 <= i && i < expectedValues.length ? expectedValues[i] : undefined);
+                        assert.deepStrictEqual(si.get(i), expectedValue, `Wrong get() value at index ${i}. ${si.get(i)} === ${expectedValue}`);
+                    }
+
+                    for (let i = -1; i <= expectedValues.length + 1; ++i) {
+                        const expectedValue: number = (0 <= i && i < expectedValues.length ? expectedValues[expectedValues.length - 1 - i] : undefined);
+                        assert.deepStrictEqual(si.getFromEnd(i), expectedValue, `Wrong getFromEnd() value at index ${i}. ${si.getFromEnd(i)} === ${expectedValue}`);
+                    }
+                });
+            }
+
+            skipTest([], 3, []);
+            skipTest([0, 1, 2, 3, 4], 2, [2, 3, 4]);
         });
     });
 
