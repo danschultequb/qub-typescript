@@ -716,7 +716,7 @@ class WhereIterable<T> extends IterableBase<T> {
     }
 }
 
-function getCountMinusSkip<T>(iterable: Iterable<T>, toSkip: number): number {
+function getCountWithSkip<T>(iterable: Iterable<T>, toSkip: number): number {
     let result: number = iterable.getCount();
     if (result <= toSkip) {
         result = 0;
@@ -737,8 +737,16 @@ class SkipIterable<T> extends IterableBase<T> {
     }
 
     public getCount(): number {
-        return getCountMinusSkip(this._innerIterable, this._toSkip);
+        return getCountWithSkip(this._innerIterable, this._toSkip);
     }
+}
+
+function getCountWithTake<T>(iterable: Iterable<T>, toTake: number): number {
+    let result: number = iterable.getCount();
+    if (toTake < result) {
+        result = toTake;
+    }
+    return result;
 }
 
 class TakeIterable<T> extends IterableBase<T> {
@@ -751,11 +759,7 @@ class TakeIterable<T> extends IterableBase<T> {
     }
 
     public getCount(): number {
-        let result: number = this._innerIterable.getCount();
-        if (this._toTake < result) {
-            result = this._toTake;
-        }
-        return result;
+        return getCountWithTake(this._innerIterable, this._toTake);
     }
 }
 
@@ -910,6 +914,11 @@ export interface Indexable<T> extends Iterable<T> {
      * Get an Indexable that skips the first toSkip number of values from this Indexable.
      */
     skip(toSkip: number): Indexable<T>;
+
+    /**
+     * Get an Indexable based on this Indexable that only returns the provided number of values.
+     */
+    take(toTake: number): Indexable<T>;
 }
 
 export abstract class IndexableBase<T> extends IterableBase<T> implements Indexable<T> {
@@ -917,7 +926,9 @@ export abstract class IndexableBase<T> extends IterableBase<T> implements Indexa
 
     public abstract get(index: number): T;
 
-    public abstract getFromEnd(index: number): T;
+    public getFromEnd(index: number): T {
+        return this.get(this.getCount() - 1 - index);
+    }
 
     public indexOf(value: T, comparer?: (lhs: T, rhs: T) => boolean): number {
         if (!comparer) {
@@ -941,7 +952,13 @@ export abstract class IndexableBase<T> extends IterableBase<T> implements Indexa
     }
 
     public skip(toSkip: number): Indexable<T> {
-        return toSkip && 0 < toSkip ? new SkipIndexable(this, toSkip) : this;
+        return toSkip && 0 < toSkip ? new SkipIndexable<T>(this, toSkip) : this;
+    }
+
+    public take(toTake: number): Indexable<T> {
+        let result: Indexable<T>;
+
+        return toTake && 0 < toTake ? new TakeIndexable<T>(this, toTake) : new ArrayList<T>();
     }
 }
 
@@ -951,7 +968,7 @@ class SkipIndexable<T> extends IndexableBase<T> {
     }
 
     public getCount(): number {
-        return getCountMinusSkip(this._innerIndexable, this._toSkip);
+        return getCountWithSkip(this._innerIndexable, this._toSkip);
     }
 
     public iterate(): Iterator<T> {
@@ -965,9 +982,27 @@ class SkipIndexable<T> extends IndexableBase<T> {
     public get(index: number): T {
         return 0 <= index ? this._innerIndexable.get(this._toSkip + index) : undefined;
     }
+}
 
-    public getFromEnd(index: number): T {
-        return index < this.getCount() ? this._innerIndexable.getFromEnd(index) : undefined;
+class TakeIndexable<T> extends IndexableBase<T> {
+    constructor(private _innerIndexable: Indexable<T>, private _toTake: number) {
+        super();
+    }
+
+    public getCount(): number {
+        return getCountWithTake(this._innerIndexable, this._toTake);
+    }
+
+    public iterate(): Iterator<T> {
+        return this._innerIndexable.iterate().take(this._toTake);
+    }
+
+    public iterateReverse(): Iterator<T> {
+        return this._innerIndexable.iterateReverse().skip(this._innerIndexable.getCount() - this.getCount());
+    }
+
+    public get(index: number): T {
+        return 0 <= index && index < this.getCount() ? this._innerIndexable.get(index) : undefined;
     }
 }
 
