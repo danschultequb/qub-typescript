@@ -1,3 +1,7 @@
+### 1.2.2 (2017-06-26)
+
+- Add Indexable<T>.take() -> Indexable<T> method.
+
 ### 1.2.1 (2017-06-23)
 
 - Add Indexable<T>.skip() -> Indexable<T> method.
