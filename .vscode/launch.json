@@ -5,19 +5,29 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch Unit Tests",
             "type": "node",
             "request": "launch",
-            "name": "Mocha Tests",
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+            "stopOnEntry": false,
             "args": [
-                "-u",
-                "tdd",
-                "--timeout",
-                "999999",
+                "--no-timeouts",
                 "--colors",
-                "${workspaceRoot}/output/tests/"
+                "--ui",
+                "tdd",
+                "--require",
+                "source-map-support/register",
+                "output/tests/"
             ],
-            "internalConsoleOptions": "openOnSessionStart"
+            "cwd": "${workspaceRoot}",
+            "runtimeExecutable": null,
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceRoot}/output/**/*.js"
+            ],
+            "env": {
+                "NODE_ENV": "testing"
+            }
         }
     ]
 }
