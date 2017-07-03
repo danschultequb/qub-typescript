@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/danschultequb/qub-typescript.svg?branch=master)](https://travis-ci.org/danschultequb/qub-typescript)
-[![Coverage Status](https://coveralls.io/repos/github/danschultequb/qub-typescript/badge.svg?branch=AddCoverallsIntegration)](https://coveralls.io/github/danschultequb/qub-typescript?branch=AddCoverallsIntegration)
+[![Coverage Status](https://coveralls.io/repos/github/danschultequb/qub-typescript/badge.svg?branch=master)](https://coveralls.io/github/danschultequb/qub-typescript?branch=master)
 [![npm version](https://badge.fury.io/js/qub.svg)](https://badge.fury.io/js/qub)
 
 # Qub for Typescript
