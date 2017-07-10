@@ -1,3 +1,7 @@
+### 1.2.4 (2017-07-10)
+
+- Add List<T>.clear() -> void method.
+
 ### 1.2.2 (2017-06-26)
 
 - Add Indexable<T>.take() -> Indexable<T> method.

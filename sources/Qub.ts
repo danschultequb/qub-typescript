@@ -1072,6 +1072,11 @@ export interface List<T> extends Indexable<T> {
     add(value: T): void;
 
     addAll(values: T[] | Iterable<T>): void;
+
+    /**
+     * Remove all of the values from this List<T>.
+     */
+    clear(): void;
 }
 
 export abstract class ListBase<T> extends IndexableBase<T> implements List<T> {
@@ -1084,6 +1089,8 @@ export abstract class ListBase<T> extends IndexableBase<T> implements List<T> {
             }
         }
     }
+
+    public abstract clear(): void;
 }
 
 export class ArrayList<T> extends ListBase<T> {
@@ -1185,6 +1192,10 @@ export class ArrayList<T> extends ListBase<T> {
 
     public removeLast(): T {
         return this.removeAt(this.getCount() - 1);
+    }
+
+    public clear(): void {
+        this._count = 0;
     }
 }
 
@@ -1430,6 +1441,11 @@ export class SingleLinkList<T> extends ListBase<T> {
 
     public removeLast(): T {
         return this.removeAt(this.getCount() - 1);
+    }
+
+    public clear(): void {
+        this._head = undefined;
+        this._tail = undefined;
     }
 }
 

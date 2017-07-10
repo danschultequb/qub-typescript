@@ -1099,6 +1099,26 @@ suite("Qub", () => {
             assert.deepEqual(a.removeLast(), "a");
             assert.deepEqual(a.removeLast(), undefined);
         });
+
+        suite("clear()", () => {
+            test("with no elements", () => {
+                const list = new qub.ArrayList<number>();
+                list.clear();
+                assert.deepStrictEqual(list.getCount(), 0);
+            });
+
+            test("with one element", () => {
+                const list = new qub.ArrayList<number>([30]);
+                list.clear();
+                assert.deepStrictEqual(list.getCount(), 0);
+            });
+
+            test("with several elements", () => {
+                const list = new qub.ArrayList<number>([1, 2, 3, 4]);
+                list.clear();
+                assert.deepStrictEqual(list.getCount(), 0);
+            });
+        });
     });
 
     suite("SingleLinkNode<T>", () => {
@@ -1446,6 +1466,26 @@ suite("Qub", () => {
             removeLastTest([1], 1, []);
             removeLastTest([2, 3], 3, [2]);
             removeLastTest([4, 5, 6], 6, [4, 5]);
+        });
+
+        suite("clear()", () => {
+            test("with no elements", () => {
+                const list = new qub.SingleLinkList<number>();
+                list.clear();
+                assert.deepStrictEqual(list.getCount(), 0);
+            });
+
+            test("with one element", () => {
+                const list = new qub.SingleLinkList<number>([30]);
+                list.clear();
+                assert.deepStrictEqual(list.getCount(), 0);
+            });
+
+            test("with several elements", () => {
+                const list = new qub.SingleLinkList<number>([1, 2, 3, 4]);
+                list.clear();
+                assert.deepStrictEqual(list.getCount(), 0);
+            });
         });
     });
 
