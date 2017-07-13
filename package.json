@@ -1,6 +1,6 @@
 {
   "name": "qub",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "A collection of common data structures and functions",
   "main": "output/sources/Qub",
   "typings": "output/sources/Qub",
@@ -39,13 +39,13 @@
   },
   "homepage": "https://github.com/danschultequb/qub-typescript#readme",
   "devDependencies": {
-    "@types/mocha": "^2.2.41",
-    "@types/node": "^8.0.7",
-    "coveralls": "^2.13.1",
-    "mocha": "^3.4.2",
-    "nyc": "^11.0.3",
-    "open-cli": "^1.0.5",
-    "source-map-support": "^0.4.15",
-    "typescript": "^2.4.1"
+    "@types/mocha": "2.2.41",
+    "@types/node": "8.0.7",
+    "coveralls": "2.13.1",
+    "mocha": "3.4.2",
+    "nyc": "11.0.3",
+    "open-cli": "1.0.5",
+    "source-map-support": "0.4.15",
+    "typescript": "2.4.1"
   }
 }
