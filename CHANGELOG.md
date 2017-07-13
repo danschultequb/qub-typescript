@@ -1,3 +1,7 @@
+### 1.2.5 (2017-07-13)
+
+- Add Map<K,V>.Remove(K) -> void method.
+
 ### 1.2.4 (2017-07-10)
 
 - Add List<T>.clear() -> void method.
