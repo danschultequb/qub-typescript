@@ -1175,6 +1175,12 @@ export class ArrayList<T> extends ListBase<T> {
         return result;
     }
 
+    /**
+     * Remove the first instance of the provided value from this list.
+     * @param value The value to remove.
+     * @param comparer An optional comparer that will be used to determine if two values are equal.
+     * If this is not provided, then the default strict equal comparison (===) will be used.
+     */
     public remove(value: T, comparer?: (lhs: T, rhs: T) => boolean): T {
         let result: T;
 
@@ -1536,12 +1542,12 @@ export class Map<KeyType, ValueType> extends IterableBase<KeyValuePair<KeyType, 
      * the existing entry will be overwritten by the provided values.
      */
     public add(key: KeyType, value: ValueType): void {
-        const pair: KeyValuePair<KeyType, ValueType> = {
+        this.remove(key);
+        const pairToAdd: KeyValuePair<KeyType, ValueType> = {
             key: key,
             value: value
         };
-        this._pairs.remove(pair, (lhs, rhs) => lhs.key === rhs.key);
-        this._pairs.add(pair);
+        this._pairs.add(pairToAdd);
     }
 
     /**
@@ -1570,6 +1576,18 @@ export class Map<KeyType, ValueType> extends IterableBase<KeyValuePair<KeyType, 
     public get(key: KeyType): ValueType {
         const pair: KeyValuePair<KeyType, ValueType> = this._pairs.first((pair) => pair.key === key);
         return pair ? pair.value : undefined;
+    }
+
+    /**
+     * Remove the key/value pair with the provided key.
+     * @param key The key of the key/value pair to remove from this Map.
+     */
+    public remove(key: KeyType): void {
+        const pairToRemove: KeyValuePair<KeyType, ValueType> = {
+            key: key,
+            value: undefined
+        };
+        this._pairs.remove(pairToRemove, (lhs, rhs) => lhs.key === rhs.key);
     }
 }
 
