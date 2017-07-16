@@ -2005,13 +2005,13 @@ export function cloneArray<T>(values: T[]): T[] {
 }
 
 /**
- * Find the nearest package.json file by looking in the current directory and each of its
- * parent directories.
+ * Find the nearest package.json file by looking in the provided directory and each of its parent
+ * directories.
+ * @param parentPath The folder path to begin the search in.
  */
-export function getPackageJson(): any {
+export function getPackageJson(parentPath: string): any {
     const fileName: string = "package.json";
-    let parentPath: string = __dirname;
-
+    
     let packageJson: any = null;
 
     let packageJsonFilePath: string = "";

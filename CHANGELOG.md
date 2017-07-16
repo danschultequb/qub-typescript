@@ -1,3 +1,7 @@
+### 1.2.6 (2017-07-15)
+
+- Add parentPath parameter to getPackageJson() function
+
 ### 1.2.5 (2017-07-13)
 
 - Add Map<K,V>.Remove(K) -> void method.

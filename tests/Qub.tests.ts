@@ -347,8 +347,9 @@ suite("Qub", () => {
     });
 
     test("getPackageJson()", () => {
-        const packageJson: any = qub.getPackageJson();
+        const packageJson: any = qub.getPackageJson(__dirname);
         assert(packageJson);
+        assert.deepStrictEqual(packageJson.name, "qub")
     });
 
     suite("endsWith()", () => {
