@@ -1,3 +1,7 @@
+### 1.2.7 (2017-08-02)
+
+- Add comment and count flooring to repeat()
+
 ### 1.2.6 (2017-07-15)
 
 - Add parentPath parameter to getPackageJson() function
