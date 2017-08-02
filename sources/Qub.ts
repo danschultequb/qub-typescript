@@ -1761,11 +1761,19 @@ export function contains(value: string, searchString: string): boolean {
     return value && searchString && value.indexOf(searchString) !== -1 ? true : false;
 }
 
+/**
+ * Repeat the provided value the provided count number of times.
+ * @param value The value to repeat.
+ * @param count The number of times to repeat the provided value.
+ */
 export function repeat(value: string, count: number): string {
     let result: string = "";
-    if (value && count && count > 0) {
-        for (let i = 0; i < count; ++i) {
-            result += value;
+    if (value && count) {
+        const countFloor: number = Math.floor(count);
+        if (countFloor > 0) {
+            for (let i = 0; i < countFloor; ++i) {
+                result += value;
+            }
         }
     }
     return result;
@@ -2011,7 +2019,7 @@ export function cloneArray<T>(values: T[]): T[] {
  */
 export function getPackageJson(parentPath: string): any {
     const fileName: string = "package.json";
-    
+
     let packageJson: any = null;
 
     let packageJsonFilePath: string = "";

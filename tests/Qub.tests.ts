@@ -445,7 +445,9 @@ suite("Qub", () => {
         assert.deepEqual(qub.repeat("ab", undefined), "");
         assert.deepEqual(qub.repeat("ab", null), "");
         assert.deepEqual(qub.repeat("ab", 0), "");
+        assert.deepEqual(qub.repeat("ab", 0.5), "");
         assert.deepEqual(qub.repeat("ab", 1), "ab");
+        assert.deepEqual(qub.repeat("ab", 1.5), "ab");
         assert.deepEqual(qub.repeat("ab", 3), "ababab");
     });
 
