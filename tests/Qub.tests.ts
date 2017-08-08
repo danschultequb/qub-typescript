@@ -143,7 +143,7 @@ suite("Qub", () => {
         startsWithIgnoreCaseTest("apples", "A", true);
     });
 
-    suite("isDefined(any)", () => {
+    suite("isDefined()", () => {
         test("with null", () => {
             assert.deepEqual(qub.isDefined(null), false);
         });
@@ -169,7 +169,7 @@ suite("Qub", () => {
         });
     });
 
-    suite("getLength(any[]|string)", () => {
+    suite("getLength()", () => {
         function getLengthTest(value: any[] | string, expectedLength: number): void {
             test(`with ${typeof value === "string" ? qub.quote(value) : JSON.stringify(value)}`, () => {
                 assert.deepEqual(qub.getLength(value), expectedLength);
@@ -183,6 +183,22 @@ suite("Qub", () => {
         getLengthTest([], 0);
         getLengthTest([50], 1);
         getLengthTest([50, 'test'], 2);
+    });
+
+    suite("getStringWidth()", () => {
+        function getStringWidthTest(value: string, tabWidth: number, expectedWidth: number): void {
+            test(`with ${qub.escapeAndQuote(value)} and tabWidth ${tabWidth}`, () => {
+                assert.deepStrictEqual(qub.getStringWidth(value, tabWidth), expectedWidth);
+            });
+        }
+
+        getStringWidthTest(undefined, 2, 0);
+        getStringWidthTest(null, 2, 0);
+        getStringWidthTest("", 2, 0);
+        getStringWidthTest("  ", 2, 2);
+        getStringWidthTest("hello", 2, 5);
+        getStringWidthTest("\t \t", 2, 5);
+        getStringWidthTest("\t \t", 3, 7);
     });
 
     suite("getCombinedLength()", () => {
@@ -326,7 +342,7 @@ suite("Qub", () => {
         cloneTest([[], []]);
     });
 
-    suite("cloneArray(any[])", () => {
+    suite("cloneArray()", () => {
         function cloneArrayTest(value: any[]): void {
             test(`with ${JSON.stringify(value)}`, () => {
                 // Equal contents
@@ -1908,6 +1924,166 @@ suite("Qub", () => {
             test("map()", () => {
                 assert.deepEqual(iterable.iterate().map((value: number) => value.toString()).map((value: string) => value + value).toArray(), ["00", "11", "22", "33"]);
             });
+
+            suite("minimum()", () => {
+                test("with empty iterator and no comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    assert.deepEqual(iterator.minimum(), undefined);
+                });
+
+                test("with single value iterator and no comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    assert.deepEqual(iterator.minimum(), "1");
+                });
+
+                test("with multiple value iterator and no comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1, 2, 3, 4]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    assert.deepEqual(iterator.minimum(), "1");
+                });
+
+                test("with empty iterator and comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    assert.deepEqual(iterator.minimum((lhs: string, rhs: string) => lhs > rhs), undefined);
+                });
+
+                test("with single value iterator and comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    assert.deepEqual(iterator.minimum((lhs: string, rhs: string) => lhs > rhs), "1");
+                });
+
+                test("with multiple value iterator and comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1, 2, 3, 4]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    assert.deepEqual(iterator.minimum((lhs: string, rhs: string) => lhs > rhs), "4");
+                });
+
+                test("with empty started iterator and no comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    iterator.next();
+                    assert.deepEqual(iterator.minimum(), undefined);
+                });
+
+                test("with single value started iterator and no comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    iterator.next();
+                    assert.deepEqual(iterator.minimum(), "1");
+                });
+
+                test("with multiple value started iterator and no comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1, 2, 3, 4]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    iterator.next();
+                    assert.deepEqual(iterator.minimum(), "1");
+                });
+
+                test("with empty started iterator and comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    iterator.next();
+                    assert.deepEqual(iterator.minimum((lhs: string, rhs: ConstrainDOMString) => lhs > rhs), undefined);
+                });
+
+                test("with single value started iterator and comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    iterator.next();
+                    assert.deepEqual(iterator.minimum((lhs: string, rhs: string) => lhs > rhs), "1");
+                });
+
+                test("with multiple value started iterator and comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1, 2, 3, 4]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    iterator.next();
+                    assert.deepEqual(iterator.minimum((lhs: string, rhs: string) => lhs > rhs), "4");
+                });
+            });
+
+            suite("maximum()", () => {
+                test("with empty iterator and no comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    assert.deepEqual(iterator.maximum(), undefined);
+                });
+
+                test("with single value iterator and no comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    assert.deepEqual(iterator.maximum(), "1");
+                });
+
+                test("with multiple value iterator and no comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1, 2, 3, 4]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    assert.deepEqual(iterator.maximum(), "4");
+                });
+
+                test("with empty iterator and comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    assert.deepEqual(iterator.maximum((lhs: string, rhs: string) => lhs < rhs), undefined);
+                });
+
+                test("with single value iterator and comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    assert.deepEqual(iterator.maximum((lhs: string, rhs: string) => lhs < rhs), "1");
+                });
+
+                test("with multiple value iterator and comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1, 2, 3, 4]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    assert.deepEqual(iterator.maximum((lhs: string, rhs: string) => lhs < rhs), "1");
+                });
+
+                test("with empty started iterator and no comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    iterator.next();
+                    assert.deepEqual(iterator.maximum(), undefined);
+                });
+
+                test("with single value started iterator and no comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    iterator.next();
+                    assert.deepEqual(iterator.maximum(), "1");
+                });
+
+                test("with multiple value started iterator and no comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1, 2, 3, 4]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    iterator.next();
+                    assert.deepEqual(iterator.maximum(), "4");
+                });
+
+                test("with empty started iterator and comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    iterator.next();
+                    assert.deepEqual(iterator.maximum((lhs: string, rhs: string) => lhs < rhs), undefined);
+                });
+
+                test("with single value started iterator and comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    iterator.next();
+                    assert.deepEqual(iterator.maximum((lhs: string, rhs: string) => lhs < rhs), "1");
+                });
+
+                test("with multiple value started iterator and comparison function", () => {
+                    const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1, 2, 3, 4]);
+                    const iterator: qub.Iterator<string> = iterable.iterate().map((value: number) => value.toString());
+                    iterator.next();
+                    assert.deepEqual(iterator.maximum((lhs: string, rhs: string) => lhs < rhs), "1");
+                });
+            });
         });
 
         suite("concatenate()", () => {
@@ -1995,6 +2171,166 @@ suite("Qub", () => {
                 assert.deepEqual(iterator.toArrayList().toArray(), [7, 3, 1, 8]);
                 assert.deepEqual(iterator.hasStarted(), true);
                 assert.deepEqual(iterator.hasCurrent(), false);
+            });
+        });
+
+        suite("minimum()", () => {
+            test("with empty iterator and no comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                assert.deepEqual(iterator.minimum(), undefined);
+            });
+
+            test("with single value iterator and no comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                assert.deepEqual(iterator.minimum(), 1);
+            });
+
+            test("with multiple value iterator and no comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1, 2, 3, 4]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                assert.deepEqual(iterator.minimum(), 1);
+            });
+
+            test("with empty iterator and comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                assert.deepEqual(iterator.minimum((lhs: number, rhs: number) => lhs > rhs), undefined);
+            });
+
+            test("with single value iterator and comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                assert.deepEqual(iterator.minimum((lhs: number, rhs: number) => lhs > rhs), 1);
+            });
+
+            test("with multiple value iterator and comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1, 2, 3, 4]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                assert.deepEqual(iterator.minimum((lhs: number, rhs: number) => lhs > rhs), 4);
+            });
+
+            test("with empty started iterator and no comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                iterator.next();
+                assert.deepEqual(iterator.minimum(), undefined);
+            });
+
+            test("with single value started iterator and no comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                iterator.next();
+                assert.deepEqual(iterator.minimum(), 1);
+            });
+
+            test("with multiple value started iterator and no comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1, 2, 3, 4]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                iterator.next();
+                assert.deepEqual(iterator.minimum(), 1);
+            });
+
+            test("with empty started iterator and comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                iterator.next();
+                assert.deepEqual(iterator.minimum((lhs: number, rhs: number) => lhs > rhs), undefined);
+            });
+
+            test("with single value started iterator and comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                iterator.next();
+                assert.deepEqual(iterator.minimum((lhs: number, rhs: number) => lhs > rhs), 1);
+            });
+
+            test("with multiple value started iterator and comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1, 2, 3, 4]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                iterator.next();
+                assert.deepEqual(iterator.minimum((lhs: number, rhs: number) => lhs > rhs), 4);
+            });
+        });
+
+        suite("maximum()", () => {
+            test("with empty iterator and no comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                assert.deepEqual(iterator.maximum(), undefined);
+            });
+
+            test("with single value iterator and no comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                assert.deepEqual(iterator.maximum(), 1);
+            });
+
+            test("with multiple value iterator and no comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1, 2, 3, 4]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                assert.deepEqual(iterator.maximum(), 4);
+            });
+
+            test("with empty iterator and comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                assert.deepEqual(iterator.maximum((lhs: number, rhs: number) => lhs < rhs), undefined);
+            });
+
+            test("with single value iterator and comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                assert.deepEqual(iterator.maximum((lhs: number, rhs: number) => lhs < rhs), 1);
+            });
+
+            test("with multiple value iterator and comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1, 2, 3, 4]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                assert.deepEqual(iterator.maximum((lhs: number, rhs: number) => lhs < rhs), 1);
+            });
+
+            test("with empty started iterator and no comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                iterator.next();
+                assert.deepEqual(iterator.maximum(), undefined);
+            });
+
+            test("with single value started iterator and no comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                iterator.next();
+                assert.deepEqual(iterator.maximum(), 1);
+            });
+
+            test("with multiple value started iterator and no comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1, 2, 3, 4]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                iterator.next();
+                assert.deepEqual(iterator.maximum(), 4);
+            });
+
+            test("with empty started iterator and comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                iterator.next();
+                assert.deepEqual(iterator.maximum((lhs: number, rhs: number) => lhs < rhs), undefined);
+            });
+
+            test("with single value started iterator and comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                iterator.next();
+                assert.deepEqual(iterator.maximum((lhs: number, rhs: number) => lhs < rhs), 1);
+            });
+
+            test("with multiple value started iterator and comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1, 2, 3, 4]);
+                const iterator: qub.Iterator<number> = iterable.iterate();
+                iterator.next();
+                assert.deepEqual(iterator.maximum((lhs: number, rhs: number) => lhs < rhs), 1);
             });
         });
     });
@@ -2386,6 +2722,70 @@ suite("Qub", () => {
                 }
                 assert.deepEqual(values, ["0", "1", "2", "3"]);
             });
+
+            suite("minimum()", () => {
+                test("with empty iterable and no comparison function", () => {
+                    const iterable: qub.Iterable<string> = new qub.ArrayList<number>([]).map((value: number) => value.toString());
+                    assert.deepEqual(iterable.minimum(), undefined);
+                });
+
+                test("with single value iterable and no comparison function", () => {
+                    const iterable: qub.Iterable<string> = new qub.ArrayList<number>([1]).map((value: number) => value.toString());
+                    assert.deepEqual(iterable.minimum(), "1");
+                });
+
+                test("with multiple value iterable and no comparison function", () => {
+                    const iterable: qub.Iterable<string> = new qub.ArrayList<number>([1, 2, 3, 4]).map((value: number) => value.toString());
+                    assert.deepEqual(iterable.minimum(), "1");
+                });
+
+                test("with empty iterable and comparison function", () => {
+                    const iterable: qub.Iterable<string> = new qub.ArrayList<number>([]).map((value: number) => value.toString());
+                    assert.deepEqual(iterable.minimum((lhs: string, rhs: string) => lhs < rhs), undefined);
+                });
+
+                test("with single value iterable and comparison function", () => {
+                    const iterable: qub.Iterable<string> = new qub.ArrayList<number>([1]).map((value: number) => value.toString());
+                    assert.deepEqual(iterable.minimum((lhs: string, rhs: string) => lhs > rhs), "1");
+                });
+
+                test("with multiple value iterable and comparison function", () => {
+                    const iterable: qub.Iterable<string> = new qub.ArrayList<number>([1, 2, 3, 4]).map((value: number) => value.toString());
+                    assert.deepEqual(iterable.minimum((lhs: string, rhs: string) => lhs > rhs), "4");
+                });
+            });
+
+            suite("maximum()", () => {
+                test("with empty iterable and no comparison function", () => {
+                    const iterable: qub.Iterable<string> = new qub.ArrayList<number>([]).map((value: number) => value.toString());
+                    assert.deepEqual(iterable.maximum(), undefined);
+                });
+
+                test("with single value iterable and no comparison function", () => {
+                    const iterable: qub.Iterable<string> = new qub.ArrayList<number>([1]).map((value: number) => value.toString());
+                    assert.deepEqual(iterable.maximum(), "1");
+                });
+
+                test("with multiple value iterable and no comparison function", () => {
+                    const iterable: qub.Iterable<string> = new qub.ArrayList<number>([1, 2, 3, 4]).map((value: number) => value.toString());
+                    assert.deepEqual(iterable.maximum(), "4");
+                });
+
+                test("with empty iterable and comparison function", () => {
+                    const iterable: qub.Iterable<string> = new qub.ArrayList<number>([]).map((value: number) => value.toString());
+                    assert.deepEqual(iterable.maximum((lhs: string, rhs: string) => lhs < rhs), undefined);
+                });
+
+                test("with single value iterable and comparison function", () => {
+                    const iterable: qub.Iterable<string> = new qub.ArrayList<number>([1]).map((value: number) => value.toString());
+                    assert.deepEqual(iterable.maximum((lhs: string, rhs: string) => lhs < rhs), "1");
+                });
+
+                test("with multiple value iterable and comparison function", () => {
+                    const iterable: qub.Iterable<string> = new qub.ArrayList<number>([1, 2, 3, 4]).map((value: number) => value.toString());
+                    assert.deepEqual(iterable.maximum((lhs: string, rhs: string) => lhs < rhs), "1");
+                });
+            });
         });
 
         suite("concatenate()", () => {
@@ -2430,6 +2830,70 @@ suite("Qub", () => {
             endsWithTest([1, 2, 3], [2, 3], true);
             endsWithTest([1, 2, 3], [4, 3], false);
             endsWithTest([1, 2, 3], [2, 4], false);
+        });
+
+        suite("minimum()", () => {
+            test("with empty iterable and no comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([]);
+                assert.deepEqual(iterable.minimum(), undefined);
+            });
+
+            test("with single value iterable and no comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1]);
+                assert.deepEqual(iterable.minimum(), 1);
+            });
+
+            test("with multiple value iterable and no comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1, 2, 3, 4]);
+                assert.deepEqual(iterable.minimum(), 1);
+            });
+
+            test("with empty iterable and comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([]);
+                assert.deepEqual(iterable.minimum((lhs: number, rhs: number) => lhs < rhs), undefined);
+            });
+
+            test("with single value iterable and comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1]);
+                assert.deepEqual(iterable.minimum((lhs: number, rhs: number) => lhs > rhs), 1);
+            });
+
+            test("with multiple value iterable and comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1, 2, 3, 4]);
+                assert.deepEqual(iterable.minimum((lhs: number, rhs: number) => lhs > rhs), 4);
+            });
+        });
+
+        suite("maximum()", () => {
+            test("with empty iterable and no comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([]);
+                assert.deepEqual(iterable.maximum(), undefined);
+            });
+
+            test("with single value iterable and no comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1]);
+                assert.deepEqual(iterable.maximum(), 1);
+            });
+
+            test("with multiple value iterable and no comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1, 2, 3, 4]);
+                assert.deepEqual(iterable.maximum(), 4);
+            });
+
+            test("with empty iterable and comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([]);
+                assert.deepEqual(iterable.maximum((lhs: number, rhs: number) => lhs < rhs), undefined);
+            });
+
+            test("with single value iterable and comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1]);
+                assert.deepEqual(iterable.maximum((lhs: number, rhs: number) => lhs < rhs), 1);
+            });
+
+            test("with multiple value iterable and comparison function", () => {
+                const iterable: qub.Iterable<number> = new qub.ArrayList<number>([1, 2, 3, 4]);
+                assert.deepEqual(iterable.maximum((lhs: number, rhs: number) => lhs < rhs), 1);
+            });
         });
     });
 

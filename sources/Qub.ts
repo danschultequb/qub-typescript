@@ -131,6 +131,21 @@ export interface Iterator<T> {
      * of this iterator.
      */
     concatenate(iterator: Iterator<T> | T[]): Iterator<T>;
+
+    /**
+     * Get the minimum value in this Iterator based on the provided comparison function.
+     * @param lessThanComparison A comparison function that returns whether or not lhs is less than
+     *      rhs. If no comparison function is provided, defaults to standard less than comparison.
+     */
+    minimum(lessThanComparison?: (lhs: T, rhs: T) => boolean): T;
+
+    /**
+     * Get the maximum value in this Iterator based on the provided comparison function.
+     * @param greaterThanComparison A comparison function that returns whether or not lhs is greater
+     *      than rhs. If no comparison function is provided, defaults to standard greater than
+     *      comparison.
+     */
+    maximum(greaterThanComparison?: (lhs: T, rhs: T) => boolean): T;
 }
 
 export abstract class IteratorBase<T> implements Iterator<T> {
@@ -256,6 +271,54 @@ export abstract class IteratorBase<T> implements Iterator<T> {
             }
             result = new ConcatenateIterator<T>(this, toConcatenate);
         }
+        return result;
+    }
+
+    public minimum(lessThanComparison?: (lhs: T, rhs: T) => boolean): T {
+        let result: T;
+
+        if (!lessThanComparison) {
+            lessThanComparison = (lhs: T, rhs: T) => lhs < rhs;
+        }
+
+        if (!this.hasStarted()) {
+            this.next();
+        }
+
+        if (this.hasCurrent()) {
+            result = this.getCurrent();
+
+            while (this.next()) {
+                if (lessThanComparison(this.getCurrent(), result)) {
+                    result = this.getCurrent();
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public maximum(greaterThanComparison?: (lhs: T, rhs: T) => boolean): T {
+        let result: T;
+
+        if (!greaterThanComparison) {
+            greaterThanComparison = (lhs: T, rhs: T) => lhs > rhs;
+        }
+
+        if (!this.hasStarted()) {
+            this.next();
+        }
+
+        if (this.hasCurrent()) {
+            result = this.getCurrent();
+
+            while (this.next()) {
+                if (greaterThanComparison(this.getCurrent(), result)) {
+                    result = this.getCurrent();
+                }
+            }
+        }
+
         return result;
     }
 }
@@ -480,6 +543,54 @@ class MapIterator<OuterT, InnerT> implements Iterator<OuterT> {
     public concatenate(toConcatenate: Iterator<OuterT>): Iterator<OuterT> {
         return new ConcatenateIterator<OuterT>(this, toConcatenate);
     }
+
+    public minimum(lessThanComparison?: (lhs: OuterT, rhs: OuterT) => boolean): OuterT {
+        let result: OuterT;
+
+        if (!lessThanComparison) {
+            lessThanComparison = (lhs: OuterT, rhs: OuterT) => lhs < rhs;
+        }
+
+        if (!this.hasStarted()) {
+            this.next();
+        }
+
+        if (this.hasCurrent()) {
+            result = this.getCurrent();
+
+            while (this.next()) {
+                if (lessThanComparison(this.getCurrent(), result)) {
+                    result = this.getCurrent();
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public maximum(greaterThanComparison: (lhs: OuterT, rhs: OuterT) => boolean): OuterT {
+        let result: OuterT;
+
+        if (!greaterThanComparison) {
+            greaterThanComparison = (lhs: OuterT, rhs: OuterT) => lhs > rhs;
+        }
+
+        if (!this.hasStarted()) {
+            this.next();
+        }
+
+        if (this.hasCurrent()) {
+            result = this.getCurrent();
+
+            while (this.next()) {
+                if (greaterThanComparison(this.getCurrent(), result)) {
+                    result = this.getCurrent();
+                }
+            }
+        }
+
+        return result;
+    }
 }
 
 class ConcatenateIterator<T> extends IteratorBase<T> {
@@ -592,6 +703,21 @@ export interface Iterable<T> {
      * Get whether or not this Iterable<T> ends with the provided values.
      */
     endsWith(values: Iterable<T>): boolean;
+
+    /**
+     * Get the minimum value in this Iterable based on the provided comparison function.
+     * @param lessThanComparison A comparison function that returns whether or not lhs is less than
+     *      rhs. If no comparison function is provided, defaults to standard less than comparison.
+     */
+    minimum(lessThanComparison?: (lhs: T, rhs: T) => boolean): T;
+
+    /**
+     * Get the maximum value in this Iterable based on the provided comparison function.
+     * @param greaterThanComparison A comparison function that returns whether or not lhs is greater
+     *      than rhs. If no comparison function is provided, defaults to standard greater than
+     *      comparison.
+     */
+    maximum(greaterThanComparison?: (lhs: T, rhs: T) => boolean): T;
 }
 
 /**
@@ -703,6 +829,14 @@ export abstract class IterableBase<T> implements Iterable<T> {
         }
 
         return result;
+    }
+
+    public minimum(lessThanComparison?: (lhs: T, rhs: T) => boolean): T {
+        return this.iterate().minimum(lessThanComparison);
+    }
+
+    public maximum(greaterThanComparison?: (lhs: T, rhs: T) => boolean): T {
+        return this.iterate().maximum(greaterThanComparison);
     }
 }
 
@@ -873,6 +1007,14 @@ class MapIterable<OuterT, InnerT> implements Iterable<OuterT> {
         }
 
         return result;
+    }
+
+    public minimum(lessThanComparison?: (lhs: OuterT, rhs: OuterT) => boolean): OuterT {
+        return this.iterate().minimum(lessThanComparison);
+    }
+
+    public maximum(greaterThanComparison?: (lhs: OuterT, rhs: OuterT) => boolean): OuterT {
+        return this.iterate().maximum(greaterThanComparison);
     }
 }
 
@@ -1733,6 +1875,23 @@ export function isDefined(value: any): boolean {
 
 export function getLength(value: any[] | string): number {
     return isDefined(value) ? value.length : 0;
+}
+
+/**
+ * Get the number of columns/character spaces for the provided value.
+ * @param value The string to measure.
+ * @param tabWidth The number of spaces that are equivalent to one tab's width.
+ */
+export function getStringWidth(value: string, tabWidth: number): number {
+    let result: number = 0;
+
+    if (value) {
+        for (const character of value) {
+            result += character === "\t" ? tabWidth : 1;
+        }
+    }
+
+    return result;
 }
 
 export function startsWith(value: string, prefix: string): boolean {
