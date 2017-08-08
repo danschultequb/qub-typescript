@@ -1,3 +1,7 @@
+### 1.3.0 (2017-08-08)
+
+- Add minimum() and maximum() to Iterator and Iterable
+
 ### 1.2.7 (2017-08-02)
 
 - Add comment and count flooring to repeat()
