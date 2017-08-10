@@ -1,3 +1,7 @@
+### 1.4.0 (2017-08-10)
+
+- Add unquote()
+
 ### 1.3.0 (2017-08-08)
 
 - Add minimum() and maximum() to Iterator and Iterable

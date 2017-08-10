@@ -440,6 +440,35 @@ suite("Qub", () => {
         containsTest("es", "les", false);
     });
 
+    suite("unquote()", () => {
+        function unquoteTest(value: string, expectedValue: string = value): void {
+            test(`with ${qub.escapeAndQuote(value)}`, () => {
+                assert.deepStrictEqual(qub.unquote(value), expectedValue);
+            });
+        }
+
+        unquoteTest(undefined);
+        unquoteTest(null);
+        unquoteTest("");
+        unquoteTest("a");
+        unquoteTest(" ");
+        unquoteTest(`"`, ``);
+        unquoteTest(`""`, ``);
+        unquoteTest(`"""`, `"`);
+        unquoteTest(`""""`, `""`);
+        unquoteTest(`"'`, `'`);
+        unquoteTest(`"'"`, `'`);
+        unquoteTest(`'`, ``);
+        unquoteTest(`''`, ``);
+        unquoteTest(`'''`, `'`);
+        unquoteTest(`''''`, `''`);
+        unquoteTest(`'"`, `"`);
+        unquoteTest(`'"'`, `"`);
+        unquoteTest(`"a`, `a`);
+        unquoteTest(`"a"`, `a`);
+        unquoteTest(`a"`, `a`);
+    });
+
     test("repeat()", () => {
         assert.deepEqual(qub.repeat(undefined, undefined), "");
         assert.deepEqual(qub.repeat(undefined, null), "");
