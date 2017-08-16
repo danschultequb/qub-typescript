@@ -1061,6 +1061,12 @@ export interface Indexable<T> extends Iterable<T> {
      * Get an Indexable based on this Indexable that only returns the provided number of values.
      */
     take(toTake: number): Indexable<T>;
+
+    /**
+     * Get an Indexable based on this Indexable that maps each of this Indexable's values to a
+     * different value.
+     */
+    map<U>(mapFunction: (value: T) => U): Indexable<U>;
 }
 
 export abstract class IndexableBase<T> extends IterableBase<T> implements Indexable<T> {
@@ -1101,6 +1107,14 @@ export abstract class IndexableBase<T> extends IterableBase<T> implements Indexa
         let result: Indexable<T>;
 
         return toTake && 0 < toTake ? new TakeIndexable<T>(this, toTake) : new ArrayList<T>();
+    }
+
+    /**
+     * Get an Indexable based on this Indexable that maps each of this Indexable's values to a
+     * different value.
+     */
+    public map<NewT>(mapFunction: (value: T) => NewT): Indexable<NewT> {
+        return mapFunction ? new MapIndexable<NewT,T>(this, mapFunction) : new ArrayList<NewT>();
     }
 }
 
@@ -1145,6 +1159,139 @@ class TakeIndexable<T> extends IndexableBase<T> {
 
     public get(index: number): T {
         return 0 <= index && index < this.getCount() ? this._innerIndexable.get(index) : undefined;
+    }
+}
+
+class MapIndexable<OuterT, InnerT> implements Indexable<OuterT> {
+    constructor(private _innerIndexable: Indexable<InnerT>, private _mapFunction: (value: InnerT) => OuterT) {
+    }
+
+    [Symbol.iterator](): JavascriptIterator<OuterT> {
+        return new JavascriptIterator<OuterT>(this.iterate());
+    }
+
+    public iterate(): Iterator<OuterT> {
+        return this._innerIndexable.iterate().map(this._mapFunction);
+    }
+
+    public iterateReverse(): Iterator<OuterT> {
+        return this._innerIndexable.iterateReverse().map(this._mapFunction);
+    }
+
+    public get(index: number): OuterT {
+        return this._mapFunction(this._innerIndexable.get(index));
+    }
+
+    public getFromEnd(index: number): OuterT {
+        return this._mapFunction(this._innerIndexable.getFromEnd(index));
+    }
+
+    public any(condition?: (value: OuterT) => boolean): boolean {
+        return this.iterate().any(condition);
+    }
+
+    public getCount(): number {
+        return this._innerIndexable.getCount();
+    }
+
+    public contains(value: OuterT, comparison?: (lhs: OuterT, rhs: OuterT) => boolean): boolean {
+        if (!comparison) {
+            comparison = (lhs: OuterT, rhs: OuterT) => lhs === rhs;
+        }
+
+        return this.any((iterableValue: OuterT) => comparison(iterableValue, value));
+    }
+
+    public first(condition?: (value: OuterT) => boolean): OuterT {
+        return this.iterate().first(condition);
+    }
+
+    public last(condition?: (value: OuterT) => boolean): OuterT {
+        return this.iterate().last(condition);
+    }
+
+    public where(condition: (value: OuterT) => boolean): Iterable<OuterT> {
+        return condition ? new WhereIterable(this, condition) : this;
+    }
+
+    public skip(toSkip: number): Indexable<OuterT> {
+        return toSkip && 0 < toSkip ? new SkipIndexable(this, toSkip) : this;
+    }
+
+    public skipLast(toSkip: number): Indexable<OuterT> {
+        return toSkip && 0 < toSkip ? this.take(this.getCount() - toSkip) : this;
+    }
+
+    public take(toTake: number): Indexable<OuterT> {
+        return toTake && 0 < toTake ? new TakeIndexable(this, toTake) : new ArrayList<OuterT>();
+    }
+
+    public takeLast(toTake: number): Indexable<OuterT> {
+        let result: Indexable<OuterT>;
+        if (!toTake || toTake < 0) {
+            result = new ArrayList<OuterT>();
+        }
+        else {
+            const count: number = this.getCount();
+            if (count <= toTake) {
+                result = this;
+            }
+            else {
+                result = this.skip(count - toTake);
+            }
+        }
+        return result;
+    }
+
+    public map<NewT>(mapFunction: (value: OuterT) => NewT): Indexable<NewT> {
+        return mapFunction ? new MapIndexable<NewT, OuterT>(this, mapFunction) : new ArrayList<NewT>();
+    }
+
+    public concatenate(toConcatenate: Iterable<OuterT> | OuterT[]): Iterable<OuterT> {
+        return toConcatenate ? new ConcatenateIterable<OuterT>(this, toConcatenate) : this;
+    }
+
+    public toArray(): OuterT[] {
+        return this.iterate().toArray();
+    }
+
+    public endsWith(values: Iterable<OuterT>): boolean {
+        let result: boolean;
+
+        if (!values) {
+            result = false;
+        }
+        else {
+            const valuesCount: number = values.getCount();
+            if (valuesCount === 0) {
+                result = false;
+            }
+            else if (this.getCount() < valuesCount) {
+                result = false;
+            }
+            else {
+                result = true;
+
+                const thisLastValuesIterator: Iterator<OuterT> = this.takeLast(valuesCount).iterate();
+                const valuesIterator: Iterator<OuterT> = values.iterate();
+                while (thisLastValuesIterator.next() === valuesIterator.next() && thisLastValuesIterator.hasCurrent()) {
+                    if (thisLastValuesIterator.getCurrent() !== valuesIterator.getCurrent()) {
+                        result = false;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public minimum(lessThanComparison?: (lhs: OuterT, rhs: OuterT) => boolean): OuterT {
+        return this.iterate().minimum(lessThanComparison);
+    }
+
+    public maximum(greaterThanComparison?: (lhs: OuterT, rhs: OuterT) => boolean): OuterT {
+        return this.iterate().maximum(greaterThanComparison);
     }
 }
 
