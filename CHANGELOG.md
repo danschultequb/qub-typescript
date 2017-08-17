@@ -1,3 +1,7 @@
+### 1.4.2 (2017-08-16)
+
+- Fix packaging problem.
+
 ### 1.4.1 (2017-08-16)
 
 - Update Indexable<T> methods to return Indexables instead of Iterables.
