@@ -1,8 +1,8 @@
 import * as assert from "assert";
 
-import * as qub from "../sources/Qub";
+import * as qub from "../sources/qub";
 
-suite("Qub", () => {
+suite("qub", () => {
     suite("quote(string)", () => {
         test("with null", () => {
             assert.deepEqual(qub.quote(null), "null");
@@ -438,6 +438,35 @@ suite("Qub", () => {
         containsTest("apples", "app", true);
         containsTest("les", "les", true);
         containsTest("es", "les", false);
+    });
+
+    suite("unquote()", () => {
+        function unquoteTest(value: string, expectedValue: string = value): void {
+            test(`with ${qub.escapeAndQuote(value)}`, () => {
+                assert.deepStrictEqual(qub.unquote(value), expectedValue);
+            });
+        }
+
+        unquoteTest(undefined);
+        unquoteTest(null);
+        unquoteTest("");
+        unquoteTest("a");
+        unquoteTest(" ");
+        unquoteTest(`"`, ``);
+        unquoteTest(`""`, ``);
+        unquoteTest(`"""`, `"`);
+        unquoteTest(`""""`, `""`);
+        unquoteTest(`"'`, `'`);
+        unquoteTest(`"'"`, `'`);
+        unquoteTest(`'`, ``);
+        unquoteTest(`''`, ``);
+        unquoteTest(`'''`, `'`);
+        unquoteTest(`''''`, `''`);
+        unquoteTest(`'"`, `"`);
+        unquoteTest(`'"'`, `"`);
+        unquoteTest(`"a`, `a`);
+        unquoteTest(`"a"`, `a`);
+        unquoteTest(`a"`, `a`);
     });
 
     test("repeat()", () => {
@@ -2339,7 +2368,7 @@ suite("Qub", () => {
         suite("contains()", () => {
             function containsTest(testName: string, values: number[], searchFor: number, expected: boolean): void {
                 test(testName, () => {
-                    const ci = new qub.ArrayList(values);
+                    const ci = new qub.ArrayList<number>(values);
                     assert.deepEqual(ci.contains(searchFor), expected);
                 });
             }
@@ -2351,8 +2380,8 @@ suite("Qub", () => {
             containsTest("with searchFor value in values", [1, 7, 3], 7, true);
 
             test("with searchFor value in in values with comparer", () => {
-                const ci = new qub.ArrayList([1, 2, 3]);
-                assert.deepEqual(ci.contains(8, (lhs, rhs) => lhs % 2 === rhs % 2), true);
+                const ci = new qub.ArrayList<number>([1, 2, 3]);
+                assert.deepEqual(ci.contains(8, (lhs: number, rhs: number) => lhs % 2 === rhs % 2), true);
             });
         });
 
@@ -2623,7 +2652,7 @@ suite("Qub", () => {
             suite("contains()", () => {
                 function containsTest(testName: string, values: number[], searchFor: string, expected: boolean): void {
                     test(testName, () => {
-                        const mi = new qub.ArrayList(values).where((value: number) => true).map((value) => value.toString());
+                        const mi = new qub.ArrayList<number>(values).where((value: number) => true).map((value) => value.toString());
                         assert.deepEqual(mi.contains(searchFor), expected);
                     });
                 }
@@ -2635,8 +2664,8 @@ suite("Qub", () => {
                 containsTest("with searchFor value in values", [1, 7, 3], "7", true);
 
                 test("with searchFor value in in values with comparer", () => {
-                    const ci = new qub.ArrayList([1, 2, 3]).where((value: number) => true).map((value) => value.toString());
-                    assert.deepEqual(ci.contains("200", (iterableValue, value) => value.substring(0, 1) === iterableValue), true);
+                    const ci = new qub.ArrayList<number>([1, 2, 3]).where((value: number) => true).map((value) => value.toString());
+                    assert.deepEqual(ci.contains("200", (iterableValue: string, value: string) => value.substring(0, 1) === iterableValue), true);
                 });
             });
 

@@ -2068,6 +2068,37 @@ export function contains(value: string, searchString: string): boolean {
 }
 
 /**
+ * Remove the surrounding quotes from the provided string value if the string is quoted.
+ * @param value The string to unquote.
+ */
+export function unquote(value: string): string {
+    let result: string = value;
+    if (value) {
+        const valueLength: number = value.length;
+
+        let resultStartIndex: number = 0;
+        let resultLength: number = valueLength;
+
+        const firstCharacter: string = value[0];
+        const lastCharacter: string = value[valueLength - 1];
+        if (firstCharacter === `"` || firstCharacter === `'`) {
+            ++resultStartIndex;
+            --resultLength;
+
+            if (lastCharacter === firstCharacter) {
+                --resultLength;
+            }
+        }
+        else if (lastCharacter === `"` || lastCharacter === `'`) {
+            --resultLength;
+        }
+
+        result = value.substr(resultStartIndex, resultLength);
+    }
+    return result;
+}
+
+/**
  * Repeat the provided value the provided count number of times.
  * @param value The value to repeat.
  * @param count The number of times to repeat the provided value.
