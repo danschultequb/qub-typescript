@@ -7,27 +7,28 @@ export interface JavascriptIteratorResult<T> {
 }
 
 export class JavascriptIterator<T> {
-    private _hasInitialValue: boolean;
-    private _visitedInitialValue: boolean = false;
-
     constructor(private _iterator: Iterator<T>) {
-        this._hasInitialValue = _iterator.hasCurrent();
     }
 
     public next(): JavascriptIteratorResult<T> {
         let done: boolean;
-        if (this._hasInitialValue && !this._visitedInitialValue) {
-            this._visitedInitialValue = true;
-            done = false;
-        }
-        else {
+        if (!this._iterator.hasStarted()) {
             done = !this._iterator.next();
         }
+        else {
+            done = !this._iterator.hasCurrent();
+        }
 
-        return {
+        const result: JavascriptIteratorResult<T> = {
             done: done,
             value: this._iterator.getCurrent()
         };
+        
+        if (!done) {
+            this._iterator.next();
+        }
+
+        return result;
     }
 }
 
