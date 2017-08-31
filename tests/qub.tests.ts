@@ -3484,6 +3484,48 @@ suite("qub", () => {
             nextTest("%", [qub.Percent(0)]);
             nextTest("^", [qub.Unrecognized("^", 0)]);
         });
+
+        suite("stress test", () => {
+            function stressTest(rows: number, columns: number, cellText: string = "hello"): void {
+                let text: string = "";
+                for (let row = 0; row < rows; ++row) {
+                    for (let column = 0; column < columns; ++column) {
+                        text += cellText;
+                        if (column < columns - 1) {
+                            text += ",";
+                        }
+                    }
+
+                    if (row < rows - 1) {
+                        text += "\n";
+                    }
+                }
+
+                test(`with ${rows}x${columns} cell CSV document`, () => {
+                    const lexer = new qub.Lexer(text);
+                    let lexCount: number = 0;
+                    while (lexer.next()) {
+                        ++lexCount;
+                    }
+
+                    assert.deepStrictEqual(lexCount, (columns * 2 * rows) - 1);
+                    //assert.deepStrictEqual(qub.getCombinedText(lexer), text);
+                });
+            }
+
+            stressTest(1, 1);
+            stressTest(10, 10);
+            stressTest(10, 100);
+            stressTest(10, 1000);
+            stressTest(100, 1);
+            stressTest(100, 10);
+            stressTest(100, 100);
+            stressTest(100, 1000);
+            stressTest(1000, 1);
+            stressTest(1000, 10);
+            stressTest(1000, 100);
+            stressTest(1000, 1000);
+        });
     });
 
     suite("isLetter(string)", () => {
