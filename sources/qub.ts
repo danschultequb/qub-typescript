@@ -1,15 +1,24 @@
 import * as fs from "fs";
 import * as path from "path";
 
+/**
+ * The interface that is expected by Javascript/Typescript to create a for...of loop.
+ */
 export interface JavascriptIteratorResult<T> {
     done: boolean;
     value: T;
 }
 
+/**
+ * An adapter between an Iterator and an iterator that Javascript/Typescript expects.
+ */
 export class JavascriptIterator<T> {
     constructor(private _iterator: Iterator<T>) {
     }
 
+    /**
+     * Get the next value in the Iterator.
+     */
     public next(): JavascriptIteratorResult<T> {
         let done: boolean;
         if (!this._iterator.hasStarted()) {
@@ -149,6 +158,10 @@ export interface Iterator<T> {
     maximum(greaterThanComparison?: (lhs: T, rhs: T) => boolean): T;
 }
 
+/**
+ * The base class for Iterator implementations. This class provides many of the common
+ * implementations for Iterator methods.
+ */
 export abstract class IteratorBase<T> implements Iterator<T> {
     public abstract hasStarted(): boolean;
     public abstract hasCurrent(): boolean;
@@ -324,6 +337,9 @@ export abstract class IteratorBase<T> implements Iterator<T> {
     }
 }
 
+/**
+ * A decorator base-class for Iterators.
+ */
 abstract class IteratorDecorator<T> extends IteratorBase<T> {
     constructor(private _innerIterator: Iterator<T>) {
         super();
@@ -2468,15 +2484,15 @@ export class Lex {
     /**
      * The character index that this lex begins on.
      */
-    public get startIndex(): number {
+    public getStartIndex(): number {
         return this._startIndex;
     }
 
-    public get afterEndIndex(): number {
+    public getAfterEndIndex(): number {
         return this._startIndex + this.getLength();
     }
 
-    public get span(): Span {
+    public getSpan(): Span {
         return new Span(this._startIndex, this.getLength());
     }
 
@@ -2672,23 +2688,22 @@ export function Unrecognized(character: string, startIndex: number): Lex {
  * A lexer that will break up a character stream into a stream of lexes.
  */
 export class Lexer extends IteratorBase<Lex> {
-    private _iterator: StringIterator;
-    private _characterStartIndexOffset: number;
-
+    private _characters: Iterator<string>;
+    private _hasStarted: boolean;
     private _currentLex: Lex;
 
-    constructor(text: string, startIndex: number = 0) {
+    constructor(text: string) {
         super();
 
-        this._iterator = new StringIterator(text);
-        this._characterStartIndexOffset = startIndex;
+        this._characters = new StringIterator(text);
+        this._hasStarted = false;
     }
 
     /**
      * Whether this object has started tokenizing its input stream or not.
      */
     public hasStarted(): boolean {
-        return this._iterator.hasStarted();
+        return this._hasStarted;
     }
 
     /**
@@ -2705,203 +2720,194 @@ export class Lexer extends IteratorBase<Lex> {
         return this._currentLex;
     }
 
-    private getCurrentCharacterStartIndex(): number {
-        return this._iterator.currentIndex + this._characterStartIndexOffset;
-    }
-
-    private hasCurrentCharacter(): boolean {
-        return this._iterator.hasCurrent();
-    }
-
-    private getCurrentCharacter(): string {
-        return this._iterator.getCurrent();
-    }
-
-    private nextCharacter(): boolean {
-        return this._iterator.next();
-    }
-
     /**
      * Get the next lex in the stream.
      */
     public next(): boolean {
-        if (!this.hasStarted()) {
-            this.nextCharacter();
+        let lexStartIndex: number;
+
+        if (!this._hasStarted) {
+            lexStartIndex = 0;
+            this._hasStarted = true;
+            this._characters.next();
+        }
+        else if (this._currentLex) {
+            lexStartIndex = this._currentLex.getAfterEndIndex();
         }
 
-        if (this.hasCurrentCharacter()) {
-            const currentLexStartIndex: number = this.getCurrentCharacterStartIndex();
-            switch (this.getCurrentCharacter()) {
+        if (this._characters.hasCurrent()) {
+            const lexFirstCharacter: string = this._characters.getCurrent();
+            switch (lexFirstCharacter) {
                 case "{":
-                    this._currentLex = LeftCurlyBracket(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = LeftCurlyBracket(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case "}":
-                    this._currentLex = RightCurlyBracket(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = RightCurlyBracket(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case "[":
-                    this._currentLex = LeftSquareBracket(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = LeftSquareBracket(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case "]":
-                    this._currentLex = RightSquareBracket(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = RightSquareBracket(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case "(":
-                    this._currentLex = LeftParenthesis(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = LeftParenthesis(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case ")":
-                    this._currentLex = RightParenthesis(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = RightParenthesis(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case "<":
-                    this._currentLex = LeftAngleBracket(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = LeftAngleBracket(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case ">":
-                    this._currentLex = RightAngleBracket(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = RightAngleBracket(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case `"`:
-                    this._currentLex = DoubleQuote(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = DoubleQuote(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case `'`:
-                    this._currentLex = SingleQuote(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = SingleQuote(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case "-":
-                    this._currentLex = Dash(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = Dash(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case "+":
-                    this._currentLex = Plus(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = Plus(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case ",":
-                    this._currentLex = Comma(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = Comma(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case ":":
-                    this._currentLex = Colon(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = Colon(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case ";":
-                    this._currentLex = Semicolon(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = Semicolon(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case "!":
-                    this._currentLex = ExclamationPoint(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = ExclamationPoint(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case "\\":
-                    this._currentLex = Backslash(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = Backslash(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case "/":
-                    this._currentLex = ForwardSlash(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = ForwardSlash(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case "?":
-                    this._currentLex = QuestionMark(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = QuestionMark(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case "=":
-                    this._currentLex = EqualsSign(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = EqualsSign(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case ".":
-                    this._currentLex = Period(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = Period(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case "_":
-                    this._currentLex = Underscore(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = Underscore(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case "&":
-                    this._currentLex = Ampersand(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = Ampersand(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case " ":
-                    this._currentLex = Space(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = Space(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case "\t":
-                    this._currentLex = Tab(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = Tab(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case "\r":
-                    if (!this.nextCharacter() || this.getCurrentCharacter() !== "\n") {
-                        this._currentLex = CarriageReturn(currentLexStartIndex);
+                    if (!this._characters.next() || this._characters.getCurrent() !== "\n") {
+                        this._currentLex = CarriageReturn(lexStartIndex);
                     }
                     else {
-                        this._currentLex = CarriageReturnNewLine(currentLexStartIndex);
-                        this.nextCharacter();
+                        this._currentLex = CarriageReturnNewLine(lexStartIndex);
+                        this._characters.next();
                     }
                     break;
 
                 case "\n":
-                    this._currentLex = NewLine(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = NewLine(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case "*":
-                    this._currentLex = Asterisk(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = Asterisk(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case "%":
-                    this._currentLex = Percent(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = Percent(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case "|":
-                    this._currentLex = VerticalBar(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = VerticalBar(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 case "#":
-                    this._currentLex = Hash(currentLexStartIndex);
-                    this.nextCharacter();
+                    this._currentLex = Hash(lexStartIndex);
+                    this._characters.next();
                     break;
 
                 default:
-                    if (isLetter(this.getCurrentCharacter())) {
-                        this._currentLex = Letters(readLetters(this._iterator), currentLexStartIndex);
+                    if (isLetter(lexFirstCharacter)) {
+                        this._currentLex = Letters(readLetters(this._characters), lexStartIndex);
                     }
-                    else if (isDigit(this.getCurrentCharacter())) {
-                        this._currentLex = Digits(readDigits(this._iterator), currentLexStartIndex);
+                    else if (isDigit(lexFirstCharacter)) {
+                        this._currentLex = Digits(readDigits(this._characters), lexStartIndex);
                     }
                     else {
-                        this._currentLex = Unrecognized(this.getCurrentCharacter(), currentLexStartIndex);
-                        this.nextCharacter();
+                        this._currentLex = Unrecognized(lexFirstCharacter, lexStartIndex);
+                        this._characters.next();
                     }
                     break;
             }
@@ -3032,8 +3038,6 @@ export class StringIterable extends IterableBase<string> {
         return new StringIterator(this._text, getLength(this._text) - 1, -1);
     }
 }
-
-
 
 /**
  * The different types of issues that can be found in a document.
