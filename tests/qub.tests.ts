@@ -1173,27 +1173,27 @@ suite("qub", () => {
         suite("constructor()", () => {
             test("with value and no next node", () => {
                 const node = new qub.SingleLinkNode<number>(0);
-                assert.deepEqual(node.value, 0);
-                assert.deepEqual(node.next, undefined);
+                assert.deepEqual(node.getValue(), 0);
+                assert.deepEqual(node.getNext(), undefined);
             });
 
             test("with value and undefined next node", () => {
                 const node = new qub.SingleLinkNode<number>(1, undefined);
-                assert.deepEqual(node.value, 1);
-                assert.deepEqual(node.next, undefined);
+                assert.deepEqual(node.getValue(), 1);
+                assert.deepEqual(node.getNext(), undefined);
             });
 
             test("with value and null next node", () => {
                 const node = new qub.SingleLinkNode<number>(2, null);
-                assert.deepEqual(node.value, 2);
-                assert.deepEqual(node.next, null);
+                assert.deepEqual(node.getValue(), 2);
+                assert.deepEqual(node.getNext(), null);
             });
 
             test("with value and next node", () => {
                 const next = new qub.SingleLinkNode<number>(4);
                 const node = new qub.SingleLinkNode<number>(3, next);
-                assert.deepEqual(node.value, 3);
-                assert.deepEqual(node.next, next);
+                assert.deepEqual(node.getValue(), 3);
+                assert.deepEqual(node.getNext(), next);
             });
         });
 
@@ -1218,8 +1218,8 @@ suite("qub", () => {
             function setValueTest(value: string): void {
                 test(`with ${qub.escapeAndQuote(value)}`, () => {
                     const node = new qub.SingleLinkNode<string>("test");
-                    node.value = value;
-                    assert.deepEqual(node.value, value);
+                    node.setValue(value);
+                    assert.deepEqual(node.getValue(), value);
                 });
             }
 
@@ -1233,8 +1233,8 @@ suite("qub", () => {
             function setNextTest(next: qub.SingleLinkNode<string>): void {
                 test(`with ${qub.escapeAndQuote(JSON.stringify(next))}`, () => {
                     const node = new qub.SingleLinkNode<string>("test");
-                    node.next = next;
-                    assert.deepEqual(node.next, next);
+                    node.setNext(next);
+                    assert.deepEqual(node.getNext(), next);
                 });
             }
 
@@ -1541,39 +1541,39 @@ suite("qub", () => {
         suite("constructor()", () => {
             test("with value, no next node, and no previous node", () => {
                 const node = new qub.DoubleLinkNode<number>(0);
-                assert.deepEqual(node.value, 0);
-                assert.deepEqual(node.next, undefined);
-                assert.deepEqual(node.previous, undefined);
+                assert.deepEqual(node.getValue(), 0);
+                assert.deepEqual(node.getNext(), undefined);
+                assert.deepEqual(node.getPrevious(), undefined);
             });
 
             test("with value, undefined next node, and no previous node", () => {
                 const node = new qub.DoubleLinkNode<number>(1, undefined);
-                assert.deepEqual(node.value, 1);
-                assert.deepEqual(node.next, undefined);
-                assert.deepEqual(node.previous, undefined);
+                assert.deepEqual(node.getValue(), 1);
+                assert.deepEqual(node.getNext(), undefined);
+                assert.deepEqual(node.getPrevious(), undefined);
             });
 
             test("with value, null next node, and no previous node", () => {
                 const node = new qub.DoubleLinkNode<number>(2, null);
-                assert.deepEqual(node.value, 2);
-                assert.deepEqual(node.next, null);
-                assert.deepEqual(node.previous, undefined);
+                assert.deepEqual(node.getValue(), 2);
+                assert.deepEqual(node.getNext(), null);
+                assert.deepEqual(node.getPrevious(), undefined);
             });
 
             test("with value, next node, and no previous node", () => {
                 const next = new qub.DoubleLinkNode<number>(4);
                 const node = new qub.DoubleLinkNode<number>(3, next);
-                assert.deepEqual(node.value, 3);
-                assert.deepEqual(node.next, next);
-                assert.deepEqual(node.previous, undefined);
+                assert.deepEqual(node.getValue(), 3);
+                assert.deepEqual(node.getNext(), next);
+                assert.deepEqual(node.getPrevious(), undefined);
             });
 
             test("with value, undefined next node, and previous node", () => {
                 const previous = new qub.DoubleLinkNode<number>(4);
                 const node = new qub.DoubleLinkNode<number>(3, undefined, previous);
-                assert.deepEqual(node.value, 3);
-                assert.deepEqual(node.next, undefined);
-                assert.deepEqual(node.previous, previous);
+                assert.deepEqual(node.getValue(), 3);
+                assert.deepEqual(node.getNext(), undefined);
+                assert.deepEqual(node.getPrevious(), previous);
             });
         });
 
@@ -1581,8 +1581,8 @@ suite("qub", () => {
             function setValueTest(value: string): void {
                 test(`with ${qub.escapeAndQuote(value)}`, () => {
                     const node = new qub.DoubleLinkNode<string>("test");
-                    node.value = value;
-                    assert.deepEqual(node.value, value);
+                    node.setValue(value);
+                    assert.deepEqual(node.getValue(), value);
                 });
             }
 
@@ -1596,8 +1596,8 @@ suite("qub", () => {
             function setNextTest(next: qub.DoubleLinkNode<string>): void {
                 test(`with ${qub.escapeAndQuote(JSON.stringify(next))}`, () => {
                     const node = new qub.DoubleLinkNode<string>("test");
-                    node.next = next;
-                    assert.deepEqual(node.next, next);
+                    node.setNext(next);
+                    assert.deepEqual(node.getNext(), next);
                 });
             }
 
@@ -1610,8 +1610,8 @@ suite("qub", () => {
             function setPreviousTest(previous: qub.DoubleLinkNode<string>): void {
                 test(`with ${qub.escapeAndQuote(JSON.stringify(previous))}`, () => {
                     const node = new qub.DoubleLinkNode<string>("test");
-                    node.previous = previous;
-                    assert.deepEqual(node.previous, previous);
+                    node.setPrevious(previous);
+                    assert.deepEqual(node.getPrevious(), previous);
                 });
             }
 
@@ -3309,10 +3309,10 @@ suite("qub", () => {
             function constructorTest(startIndex: number, length: number): void {
                 test(`with ${startIndex} and ${length}`, () => {
                     const span = new qub.Span(startIndex, length);
-                    assert.deepEqual(span.startIndex, startIndex);
-                    assert.deepEqual(span.length, length);
-                    assert.deepEqual(span.afterEndIndex, startIndex + length);
-                    assert.deepEqual(span.endIndex, startIndex + length - 1);
+                    assert.deepEqual(span.getStartIndex(), startIndex);
+                    assert.deepEqual(span.getLength(), length);
+                    assert.deepEqual(span.getAfterEndIndex(), startIndex + length);
+                    assert.deepEqual(span.getEndIndex(), startIndex + (length > 0 ? length - 1 : 0));
                     assert.deepEqual(span.toString(), `[${startIndex},${startIndex + length})`);
                 });
             }
@@ -3329,9 +3329,9 @@ suite("qub", () => {
             test("with LeftCurlyBracket and 0", () => {
                 const t = new qub.Lex("{", 0, qub.LexType.LeftCurlyBracket);
                 assert.deepEqual(t.getType(), qub.LexType.LeftCurlyBracket);
-                assert.deepEqual(t.startIndex, 0);
-                assert.deepEqual(t.afterEndIndex, 1);
-                assert.deepEqual(t.span, new qub.Span(0, 1));
+                assert.deepEqual(t.getStartIndex(), 0);
+                assert.deepEqual(t.getAfterEndIndex(), 1);
+                assert.deepEqual(t.getSpan(), new qub.Span(0, 1));
                 assert.deepEqual(t.toString(), "{");
                 assert.deepEqual(t.isWhitespace(), false);
                 assert.deepEqual(t.isNewLine(), false);
@@ -3340,9 +3340,9 @@ suite("qub", () => {
             test("with RightCurlyBracket and 17", () => {
                 const t = new qub.Lex("}", 17, qub.LexType.RightCurlyBracket);
                 assert.deepEqual(t.getType(), qub.LexType.RightCurlyBracket);
-                assert.deepEqual(t.startIndex, 17);
-                assert.deepEqual(t.afterEndIndex, 18);
-                assert.deepEqual(t.span, new qub.Span(17, 1));
+                assert.deepEqual(t.getStartIndex(), 17);
+                assert.deepEqual(t.getAfterEndIndex(), 18);
+                assert.deepEqual(t.getSpan(), new qub.Span(17, 1));
                 assert.deepEqual(t.toString(), "}");
                 assert.deepEqual(t.isWhitespace(), false);
                 assert.deepEqual(t.isNewLine(), false);
@@ -3351,9 +3351,9 @@ suite("qub", () => {
             test("with Space and 11", () => {
                 const t = new qub.Lex(" ", 11, qub.LexType.Space);
                 assert.deepEqual(t.getType(), qub.LexType.Space);
-                assert.deepEqual(t.startIndex, 11);
-                assert.deepEqual(t.afterEndIndex, 12);
-                assert.deepEqual(t.span, new qub.Span(11, 1));
+                assert.deepEqual(t.getStartIndex(), 11);
+                assert.deepEqual(t.getAfterEndIndex(), 12);
+                assert.deepEqual(t.getSpan(), new qub.Span(11, 1));
                 assert.deepEqual(t.toString(), " ");
                 assert.deepEqual(t.isWhitespace(), true);
                 assert.deepEqual(t.isNewLine(), false);
@@ -3362,9 +3362,9 @@ suite("qub", () => {
             test("with CarriageReturnNewLine and 11", () => {
                 const t = new qub.Lex("\r\n", 11, qub.LexType.CarriageReturnNewLine);
                 assert.deepEqual(t.getType(), qub.LexType.CarriageReturnNewLine);
-                assert.deepEqual(t.startIndex, 11);
-                assert.deepEqual(t.afterEndIndex, 13);
-                assert.deepEqual(t.span, new qub.Span(11, 2));
+                assert.deepEqual(t.getStartIndex(), 11);
+                assert.deepEqual(t.getAfterEndIndex(), 13);
+                assert.deepEqual(t.getSpan(), new qub.Span(11, 2));
                 assert.deepEqual(t.toString(), "\r\n");
                 assert.deepEqual(t.isWhitespace(), false);
                 assert.deepEqual(t.isNewLine(), true);
@@ -3642,7 +3642,6 @@ suite("qub", () => {
                     assert.deepEqual(iterator.next(), false);
                     assert.deepEqual(iterator.hasStarted(), true);
                     assert.deepEqual(iterator.getCurrent(), undefined);
-                    assert.deepEqual(iterator.currentIndex, undefined);
                 }
             });
         }
@@ -3691,12 +3690,12 @@ suite("qub", () => {
         function errorTest(message: string, span: qub.Span): void {
             test(`with ${qub.escapeAndQuote(message)} and ${span.toString()}`, () => {
                 const error: qub.Issue = qub.Error(message, span);
-                assert.deepEqual(error.message, message);
-                assert.deepEqual(error.startIndex, span.startIndex);
-                assert.deepEqual(error.length, span.length);
-                assert.deepEqual(error.span, span);
-                assert.deepEqual(error.afterEndIndex, span.afterEndIndex);
-                assert.deepEqual(error.type, qub.IssueType.Error);
+                assert.deepEqual(error.getMessage(), message);
+                assert.deepEqual(error.getStartIndex(), span.getStartIndex());
+                assert.deepEqual(error.getLength(), span.getLength());
+                assert.deepEqual(error.getSpan(), span);
+                assert.deepEqual(error.getAfterEndIndex(), span.getAfterEndIndex());
+                assert.deepEqual(error.getType(), qub.IssueType.Error);
             });
         }
 
@@ -3710,12 +3709,12 @@ suite("qub", () => {
         function warningTest(message: string, span: qub.Span): void {
             test(`with ${qub.escapeAndQuote(message)} and ${span.toString()}`, () => {
                 const warning: qub.Issue = qub.Warning(message, span);
-                assert.deepEqual(warning.message, message);
-                assert.deepEqual(warning.startIndex, span.startIndex);
-                assert.deepEqual(warning.length, span.length);
-                assert.deepEqual(warning.span, span);
-                assert.deepEqual(warning.afterEndIndex, span.afterEndIndex);
-                assert.deepEqual(warning.type, qub.IssueType.Warning);
+                assert.deepEqual(warning.getMessage(), message);
+                assert.deepEqual(warning.getStartIndex(), span.getStartIndex());
+                assert.deepEqual(warning.getLength(), span.getLength());
+                assert.deepEqual(warning.getSpan(), span);
+                assert.deepEqual(warning.getAfterEndIndex(), span.getAfterEndIndex());
+                assert.deepEqual(warning.getType(), qub.IssueType.Warning);
             });
         }
 

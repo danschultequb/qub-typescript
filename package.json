@@ -10,7 +10,7 @@
   "scripts": {
     "build": "tsc -p .",
     "prepublishOnly": "npm run build",
-    "test": "mocha --colors --require source-map-support/register --ui tdd output/tests/",
+    "test": "npm run build && mocha --colors --require source-map-support/register --ui tdd output/tests/",
     "coverage": "nyc npm test && open-cli output/coverage/qub.ts.html",
     "travis-test": "npm run setup && npm run build && nyc --reporter=text-lcov npm test | coveralls",
     "setup": "npm install"

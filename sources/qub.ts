@@ -1526,28 +1526,28 @@ export class SingleLinkNode<T> extends IterableBase<T> {
     /**
      * Get this Node's value.
      */
-    public get value(): T {
+    public getValue(): T {
         return this._value;
     }
 
     /**
      * Set this Node's value.
      */
-    public set value(value: T) {
+    public setValue(value: T) {
         this._value = value;
     }
 
     /**
      * Get the next Node in the chain.
      */
-    public get next(): SingleLinkNode<T> {
+    public getNext(): SingleLinkNode<T> {
         return this._next;
     }
 
     /**
      * Set the next Node in the chain.
      */
-    public set next(next: SingleLinkNode<T>) {
+    public setNext(next: SingleLinkNode<T>) {
         this._next = next;
     }
 }
@@ -1568,7 +1568,7 @@ class SingleLinkNodeIterator<T> extends IteratorBase<T> {
     }
 
     public getCurrent(): T {
-        return this.hasCurrent() ? this._currentNode.value : undefined;
+        return this.hasCurrent() ? this._currentNode.getValue() : undefined;
     }
 
     public next(): boolean {
@@ -1576,7 +1576,7 @@ class SingleLinkNodeIterator<T> extends IteratorBase<T> {
             this._hasStarted = true;
         }
         else if (this._currentNode) {
-            this._currentNode = this._currentNode.next;
+            this._currentNode = this._currentNode.getNext();
         }
 
         return this.hasCurrent();
@@ -1606,7 +1606,7 @@ export class SingleLinkList<T> extends ListBase<T> {
         if (0 <= index) {
             resultNode = this._head;
             while (resultNode && 0 < index) {
-                resultNode = resultNode.next;
+                resultNode = resultNode.getNext();
                 --index;
             }
         }
@@ -1615,7 +1615,7 @@ export class SingleLinkList<T> extends ListBase<T> {
 
     public get(index: number): T {
         const resultNode: SingleLinkNode<T> = this.getNode(index);
-        return resultNode ? resultNode.value : undefined;
+        return resultNode ? resultNode.getValue() : undefined;
     }
 
     public getFromEnd(index: number): T {
@@ -1624,20 +1624,20 @@ export class SingleLinkList<T> extends ListBase<T> {
         if (index >= 0) {
             let searchNode: SingleLinkNode<T> = this._head;
             while (searchNode && index > 0) {
-                searchNode = searchNode.next;
+                searchNode = searchNode.getNext();
                 --index;
             }
 
             if (searchNode) {
                 resultNode = this._head;
-                while (searchNode.next) {
-                    resultNode = resultNode.next;
-                    searchNode = searchNode.next;
+                while (searchNode.getNext()) {
+                    resultNode = resultNode.getNext();
+                    searchNode = searchNode.getNext();
                 }
             }
         }
 
-        return resultNode ? resultNode.value : undefined;
+        return resultNode ? resultNode.getValue() : undefined;
     }
 
     /**
@@ -1647,7 +1647,7 @@ export class SingleLinkList<T> extends ListBase<T> {
     public set(index: number, value: T): void {
         const node: SingleLinkNode<T> = this.getNode(index);
         if (node) {
-            node.value = value;
+            node.setValue(value);
         }
     }
 
@@ -1657,7 +1657,7 @@ export class SingleLinkList<T> extends ListBase<T> {
      */
     public setLast(value: T): void {
         if (this._tail) {
-            this._tail.value = value;
+            this._tail.setValue(value);
         }
     }
 
@@ -1670,7 +1670,7 @@ export class SingleLinkList<T> extends ListBase<T> {
         let searchNode: SingleLinkNode<T> = this._head;
         while (searchNode) {
             ++count;
-            searchNode = searchNode.next;
+            searchNode = searchNode.getNext();
         }
         return count;
     }
@@ -1683,7 +1683,7 @@ export class SingleLinkList<T> extends ListBase<T> {
             this._tail = nodeToAdd;
         }
         else {
-            this._tail.next = nodeToAdd;
+            this._tail.setNext(nodeToAdd);
             this._tail = nodeToAdd;
         }
     }
@@ -1693,21 +1693,21 @@ export class SingleLinkList<T> extends ListBase<T> {
         if (isDefined(index) && 0 <= index) {
             if (index === 0) {
                 if (this._head) {
-                    result = this._head.value;
+                    result = this._head.getValue();
                     if (this._head === this._tail) {
                         this._head = undefined;
                         this._tail = undefined;
                     }
                     else {
-                        this._head = this._head.next;
+                        this._head = this._head.getNext();
                     }
                 }
             }
             else {
                 const previousNode: SingleLinkNode<T> = this.getNode(index - 1);
-                if (previousNode && previousNode.next) {
-                    result = previousNode.next.value;
-                    previousNode.next = previousNode.next.next;
+                if (previousNode && previousNode.getNext()) {
+                    result = previousNode.getNext().getValue();
+                    previousNode.setNext(previousNode.getNext().getNext());
                 }
             }
         }
@@ -1722,21 +1722,21 @@ export class SingleLinkList<T> extends ListBase<T> {
         let previousNode: SingleLinkNode<T>;
         let searchNode: SingleLinkNode<T> = this._head;
         while (searchNode) {
-            if (comparer(searchNode.value, value)) {
+            if (comparer(searchNode.getValue(), value)) {
                 break;
             }
             else {
                 previousNode = searchNode;
-                searchNode = searchNode.next;
+                searchNode = searchNode.getNext();
             }
         }
 
         if (searchNode) {
             if (!previousNode) {
-                this._head = searchNode.next;
+                this._head = searchNode.getNext();
             }
             else {
-                previousNode.next = searchNode.next;
+                previousNode.setNext(searchNode.getNext());
             }
 
             if (searchNode === this._tail) {
@@ -1744,7 +1744,7 @@ export class SingleLinkList<T> extends ListBase<T> {
             }
         }
 
-        return searchNode ? searchNode.value : undefined;
+        return searchNode ? searchNode.getValue() : undefined;
     }
 
     public removeFirst(): T {
@@ -1771,42 +1771,42 @@ export class DoubleLinkNode<T> {
     /**
      * Get this Node's value.
      */
-    public get value(): T {
+    public getValue(): T {
         return this._value;
     }
 
     /**
      * Set this Node's value.
      */
-    public set value(value: T) {
+    public setValue(value: T) {
         this._value = value;
     }
 
     /**
      * Get the next Node in the chain.
      */
-    public get next(): DoubleLinkNode<T> {
+    public getNext(): DoubleLinkNode<T> {
         return this._next;
     }
 
     /**
      * Set the next Node in the chain.
      */
-    public set next(next: DoubleLinkNode<T>) {
+    public setNext(next: DoubleLinkNode<T>) {
         this._next = next;
     }
 
     /**
      * Get the previous Node in the chain.
      */
-    public get previous(): DoubleLinkNode<T> {
+    public getPrevious(): DoubleLinkNode<T> {
         return this._previous;
     }
 
     /**
      * Set the previous Node in the chain.
      */
-    public set previous(next: DoubleLinkNode<T>) {
+    public setPrevious(next: DoubleLinkNode<T>) {
         this._previous = next;
     }
 }
@@ -2400,36 +2400,36 @@ export class Span {
     /**
      * The inclusive index at which this Span starts.
      */
-    public get startIndex(): number {
+    public getStartIndex(): number {
         return this._startIndex;
     }
 
     /**
      * The length/number of indexes that this Span encompasses.
      */
-    public get length(): number {
+    public getLength(): number {
         return this._length;
     }
 
     /**
      * The last index that is contained by this span.
      */
-    public get endIndex(): number {
-        return this.afterEndIndex - 1;
+    public getEndIndex(): number {
+        return this._length <= 0 ? this._startIndex : this.getAfterEndIndex() - 1;
     }
 
     /**
      * The first index after this span that is not contained by this span.
      */
-    public get afterEndIndex(): number {
-        return this.startIndex + this.length;
+    public getAfterEndIndex(): number {
+        return this._startIndex + this._length;
     }
 
     /**
      * Convert this Span to its string representation.
      */
     public toString(): string {
-        return `[${this.startIndex},${this.afterEndIndex})`;
+        return `[${this._startIndex},${this.getAfterEndIndex()})`;
     }
 }
 
@@ -2993,10 +2993,6 @@ export class StringIterator extends IteratorBase<string> {
         this._step = _endIndex >= _startIndex ? 1 : -1;
     }
 
-    public get currentIndex(): number {
-        return this.hasCurrent() ? this._currentIndex : undefined;
-    }
-
     public hasStarted(): boolean {
         return this._started;
     }
@@ -3057,42 +3053,42 @@ export class Issue {
     /**
      * The user-friendly message that describes what this issue is about.
      */
-    public get message(): string {
+    public getMessage(): string {
         return this._message;
     }
 
     /**
      * The character index span over which this issue applies.
      */
-    public get span(): Span {
+    public getSpan(): Span {
         return this._span;
     }
 
     /**
      * The character index at which this issue begins.
      */
-    public get startIndex(): number {
-        return this._span.startIndex;
+    public getStartIndex(): number {
+        return this._span.getStartIndex();
     }
 
     /**
      * The number of characters over which this issue applies.
      */
-    public get length(): number {
-        return this._span.length;
+    public getLength(): number {
+        return this._span.getLength();
     }
 
     /**
      * The index after the last index that this issue applies to.
      */
-    public get afterEndIndex(): number {
-        return this._span.afterEndIndex;
+    public getAfterEndIndex(): number {
+        return this._span.getAfterEndIndex();
     }
 
     /**
      * The type of this issue.
      */
-    public get type(): IssueType {
+    public getType(): IssueType {
         return this._type;
     }
 }
